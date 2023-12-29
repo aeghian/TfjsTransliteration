@@ -23,4 +23,4 @@ exports.Translitorator = function(input_tensor, model_location, tensor_datatype)
     const cleaned_output = CleanOutput(model_output_string);
     const output_tensor = ShapeModelOutput(cleaned_output);
     return output_tensor;
-    }
+  }
