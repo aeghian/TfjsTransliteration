@@ -1,6 +1,3 @@
-//const translitModuleEntry = require('./index.js');
-//mediumreader1234@proton.me Password7340
-
 function decodeArmenianWordPredictionArray(outputArray){
   let armenianLetterKeys = {
     '0': '<unk>',
