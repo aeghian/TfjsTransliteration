@@ -1,34 +1,7 @@
-function predictArmenianWords (translitEnglishWord){
-  translitEnglishWord = translitEnglishWord.toLowerCase();
-  let englishLetterKeys = {
-    '<unk>': '0',
-    '<pad>': '1',
-    '<s>': '2',
-    'h': '3',
-    'a': '4',
-    'o': '5',
-    'n': '6',
-    'e': '7',
-    't': '8',
-    'r': '9',
-    's': '10',
-    'y': '11',
-    'u': '12',
-    'z': '13',
-    'd': '14',
-    'v': '15',
-    'g': '16',
-    'l': '17',
-    'k': '18',
-    'c': '19',
-    'm': '20',
-    'b': '21',
-    'p': '22',
-    'i': '23',
-    'j': '24',
-    'f': '25'
-  };
+//const translitModuleEntry = require('./index.js');
+//mediumreader1234@proton.me Password7340
 
+function decodeArmenianWordPredictionArray(outputArray){
   let armenianLetterKeys = {
     '0': '<unk>',
     '1': '<pad>',
@@ -83,18 +56,15 @@ function predictArmenianWords (translitEnglishWord){
     '50': 'ուը',
     '51': 'ուօ'
   };
-  
-  let keyArray = []; 
-  for (const letter of translitEnglishWord){
-    keyArray.push(englishLetterKeys[letter]);
-  }
 
-  //this will need to be modified with nodejs library, but it creates placeholder dict for now
   let placeholderArray = [];
-  for (let i=0; i < 5; i++){
+  for (const prediction of outputArray){
     let placeholderData = '';
-    for (const key of keyArray){
-      placeholderData += armenianLetterKeys[(Number(key)+i).toString()];
+    for (const key of prediction){
+      if (key < 4){
+        break;
+      }
+      placeholderData += armenianLetterKeys[(Number(key)).toString()];
     }
     placeholderArray.push(placeholderData); 
   }
@@ -103,37 +73,89 @@ function predictArmenianWords (translitEnglishWord){
   return armenianWordPredictionsArray;
 }
 
-function modifyText(text) {
+function modifyText(text, outputArray) {
     let textArray = text.split(" ");
     let newText = textArray[textArray.length - 1]; //replace latest word in text THIS PROCESS SHOULD BE CHANGED BY COMPARING OLD STRING TO NEW STRING AND DOING UPDATE BECAUSE LATEST WORD IS NOT ALWAYS AT THE END
     //modify text with pytorch algo
-    let armenianWordPredictionsArray = predictArmenianWords(newText);
+    let armenianWordPredictionsArray = decodeArmenianWordPredictionArray(outputArray);
 
     textArray[textArray.length - 1] = armenianWordPredictionsArray[0];
 
     //reattach array as strng
     let modifiedText = textArray.join(" ");
+    modifiedText += " ";
 
     //store additional output options in dictionaryarmenianWordPredictionsArray
     browser.runtime.sendMessage({message: 'UpdateEnglishToArmenianDictionary', text:  newText, armenianWordPredictionsArray: armenianWordPredictionsArray});
-
-    // Return the modified text.
     return modifiedText;
   }
   
-  document.addEventListener("keydown", function(event) {
+  function getTextKeys(text){
+    let englishLetterKeys = {
+      '<unk>': '0',
+      '<pad>': '1',
+      '<s>': '2',
+      'h': '3',
+      'a': '4',
+      'o': '5',
+      'n': '6',
+      'e': '7',
+      't': '8',
+      'r': '9',
+      's': '10',
+      'y': '11',
+      'u': '12',
+      'z': '13',
+      'd': '14',
+      'v': '15',
+      'g': '16',
+      'l': '17',
+      'k': '18',
+      'c': '19',
+      'm': '20',
+      'b': '21',
+      'p': '22',
+      'i': '23',
+      'j': '24',
+      'f': '25'
+    };
+
+    let textArray = text.split(" ");
+    let newText = textArray[textArray.length - 1]; //replace latest word in text THIS PROCESS SHOULD BE CHANGED BY COMPARING OLD STRING TO NEW STRING AND DOING UPDATE BECAUSE LATEST WORD IS NOT ALWAYS AT THE END
+    newText = newText.toLowerCase();
+    newText = newText.split("").reverse().join(""); //input needs to be reversed
+    
+    let keyArray = [[2]]; 
+    for (const letter of newText){
+      keyArray.push([Number(englishLetterKeys[letter])]);
+    }
+
+    //pad for variable length
+    const maxLength = 32;
+    for (let i = keyArray.length; i < maxLength; i++){
+      keyArray.push([1]);
+    }
+
+    return keyArray;
+  }
+
+  document.addEventListener("keydown", async function(event) {
     if (event.key == " "  || event.code == "Space"){
       // Get the text that the user is typing.
       let text = event.target.value;
 
+      let textKeys = getTextKeys(text);
+
+      let outputArray = await browser.runtime.sendMessage({message: 'RunModel', textKeys: textKeys});
       // Modify the text.
-      let modifiedText = modifyText(text);
-      
+      let modifiedText = await modifyText(text, outputArray.message);
       // Set the text back on the element.
-      event.target.value = modifiedText;
+      while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
+        event.target.value = modifiedText;
+        await new Promise(r => setTimeout(r, 500)); //needed because some text fields instantly revert text after being changed
+      }
     }
   });
-
 
   document.addEventListener("selectionchange", function(event) {
     let selectionStart = event.target.selectionStart;

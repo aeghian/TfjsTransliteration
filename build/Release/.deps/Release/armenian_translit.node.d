@@ -1,1 +1,0 @@
-cmd_Release/armenian_translit.node := ln -f "Release/obj.target/armenian_translit.node" "Release/armenian_translit.node" 2>/dev/null || (rm -rf "Release/armenian_translit.node" && cp -af "Release/obj.target/armenian_translit.node" "Release/armenian_translit.node")

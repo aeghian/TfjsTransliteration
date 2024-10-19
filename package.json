@@ -12,8 +12,13 @@
   "author": "Armen Eghian",
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "@tensorflow/tfjs": "^4.21.0",
+    "@wasmer/wasi": "^1.2.2",
+    "@wasmer/wasmfs": "^0.12.0",
     "mathjs": "^11.8.2",
     "node-addon-api": "^5.1.0",
-    "node-gyp": "^9.4.0"
+    "node-gyp": "^9.4.0",
+    "tfjs": "^0.6.0",
+    "wasi": "^0.0.6"
   }
 }

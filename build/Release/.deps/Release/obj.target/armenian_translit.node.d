@@ -1,1 +1,0 @@
-cmd_Release/obj.target/armenian_translit.node := g++ -o Release/obj.target/armenian_translit.node -shared -pthread -rdynamic -m64 -L../libtorch/lib  -Wl,-soname=armenian_translit.node -Wl,--start-group Release/obj.target/armenian_translit/src/translitModel.o Release/obj.target/armenian_translit/src/index.o -Wl,--end-group -ltorch -Wl,-rpath,./libtorch/lib/

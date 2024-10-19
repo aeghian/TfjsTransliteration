@@ -8,15 +8,17 @@
     "nativeMessaging"
   ],
   "version":"1.0",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "name":"Test",
+  "background":{
+    "page": "background.html",
+    "persistent": false
+    },
   "content_scripts":[
     {
      "matches":["<all_urls>"],
      "js":["main.js"]
     }
-  ],
-  "background":{
-    "scripts":["contextmenu.js"]
-    }
+  ]
 }
 
