@@ -1,3 +1,6 @@
+//Maybe better way than global variable
+let oldTextArray = [];
+
 function decodeArmenianWordPredictionArray(outputArray){
   let armenianLetterKeys = {
     '0': '<unk>',
@@ -70,24 +73,31 @@ function decodeArmenianWordPredictionArray(outputArray){
   return armenianWordPredictionsArray;
 }
 
-function modifyText(text, outputArray) {
-    let textArray = text.split(" ");
-    let newText = textArray[textArray.length - 1]; //replace latest word in text THIS PROCESS SHOULD BE CHANGED BY COMPARING OLD STRING TO NEW STRING AND DOING UPDATE BECAUSE LATEST WORD IS NOT ALWAYS AT THE END
-    //modify text with pytorch algo
-    let armenianWordPredictionsArray = decodeArmenianWordPredictionArray(outputArray);
+function returnChangedTextIndexArray(currentTextArray, oldTextArray){
+    //DEFINE FUNCTION
+}
 
-    textArray[textArray.length - 1] = armenianWordPredictionsArray[0];
+function returnModifiedTextArray(changedTextIndexArray, currentTextArray, modelOutputsArray){
+    //DEFINE FUNCTION
+    let armenianWordPredictionsArray = decodeArmenianWordPredictionArray(modelOutputsArray); //this will need to be moved into returnModifiedTextArray
+}
+
+function modifyText(text, modelOutputsArray) {
+    let currentTextArray = text.split(" ");
+    let changedTextIndexArray = returnChangedTextIndexArray(currentTextArray, oldTextArray);
+    let modifiedTextArray = returnModifiedTextArray(changedTextIndexArray, currentTextArray, modelOutputsArray);
 
     //reattach array as strng
-    let modifiedText = textArray.join(" ");
+    let modifiedText = modifiedTextArray.join(" ");
     modifiedText += " ";
 
     //store additional output options in dictionaryarmenianWordPredictionsArray
-    browser.runtime.sendMessage({message: 'UpdateEnglishToArmenianDictionary', text:  newText, armenianWordPredictionsArray: armenianWordPredictionsArray});
+    browser.runtime.sendMessage({message: 'UpdateEnglishToArmenianDictionary', text:  newText, armenianWordPredictionsArray: armenianWordPredictionsArray}); //ADJUST THIS FOR LOOP WITH MULTIPLE OUTPUTS
+    oldTextArray = modifiedTextArray;
     return modifiedText;
   }
   
-  function getTextKeys(text){
+  function getModelInputs(text){
     let englishLetterKeys = {
       '<unk>': '0',
       '<pad>': '1',
@@ -117,23 +127,24 @@ function modifyText(text, outputArray) {
       'f': '25'
     };
 
-    let textArray = text.split(" ");
-    let newText = textArray[textArray.length - 1]; //replace latest word in text THIS PROCESS SHOULD BE CHANGED BY COMPARING OLD STRING TO NEW STRING AND DOING UPDATE BECAUSE LATEST WORD IS NOT ALWAYS AT THE END
-    newText = newText.toLowerCase();
-    newText = newText.split("").reverse().join(""); //input needs to be reversed
-    
-    let keyArray = [[2]]; 
-    for (const letter of newText){
-      keyArray.push([Number(englishLetterKeys[letter])]);
+    let currentTextArray = text.split(" ");
+    let changedTextIndexArray = returnChangedTextIndexArray(currentTextArray);
+    let modelInputsArray = [];
+    for (const textIndex of changedTextIndexArray){
+      currentTextArray[textKey].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model CAPITALS WILL NEED TO BE ADJUSTED LATER
+      let keyArray = [[2]]; 
+      for (const letter of newText){
+        keyArray.push([Number(englishLetterKeys[letter])]);
+      }
+      //pad for variable length
+      const maxLength = 32;
+      for (let i = keyArray.length; i < maxLength; i++){
+        keyArray.push([1]);
+      }
+      modelInputsArray.push(keyArray);
     }
 
-    //pad for variable length
-    const maxLength = 32;
-    for (let i = keyArray.length; i < maxLength; i++){
-      keyArray.push([1]);
-    }
-
-    return keyArray;
+    return modelInputsArray;
   }
 
   document.addEventListener("keydown", async function(event) {
@@ -141,11 +152,11 @@ function modifyText(text, outputArray) {
       // Get the text that the user is typing.
       let text = event.target.value;
 
-      let textKeys = getTextKeys(text);
+      let modelInputsArray = getModelInputs(text);
 
-      let outputArray = await browser.runtime.sendMessage({message: 'RunModel', textKeys: textKeys});
+      let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray}); //MAKE SURE RESPONSE COMES BACK PROPERLY
       // Modify the text.
-      let modifiedText = await modifyText(text, outputArray.message);
+      let modifiedText = await modifyText(text, modelOutputsArray.message);
       // Set the text back on the element.
       while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
         event.target.value = modifiedText;

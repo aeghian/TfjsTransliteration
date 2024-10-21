@@ -16,10 +16,14 @@ async function runTensorFlowModel(model, input){
 browser.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.message == 'RunModel'){
-      const input = tf.tensor(request.textKeys,[32,1], 'int32');
-      runTensorFlowModel(model, input).then(data => {
-        sendResponse({message: data});
-      });
+      let modelOutputsArray= [];
+      for (const inputKeys of request.modelInputsArray){
+        const input = tf.tensor(inputKeys,[32,1], 'int32');
+        runTensorFlowModel(model, input).then(data => {
+          modelOutputsArray.push(data);
+        });
+      }
+      sendResponse({message: modelOutputsArray});
     }
     return true; 
   }
