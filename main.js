@@ -1,6 +1,4 @@
 //Maybe better way than global variable
-let oldTextArray = [];
-
 function decodeArmenianWordPredictionArray(outputArray){
   let armenianLetterKeys = {
     '0': '<unk>',
@@ -73,79 +71,88 @@ function decodeArmenianWordPredictionArray(outputArray){
   return armenianWordPredictionsArray;
 }
 
-function returnChangedTextIndexArray(currentTextArray, oldTextArray){
-    //DEFINE FUNCTION
+function returnEnglishTextIndex(currentTextArray){
+  let englishTextIndexArray = [];
+  for (const word of currentTextArray){
+    if (/^[a-zA-Z]+$/.test(word)){
+      englishTextIndexArray.push(word);
+    }
+  }
+  return englishTextIndexArray;
 }
 
-function returnModifiedTextArray(changedTextIndexArray, currentTextArray, modelOutputsArray){
-    //DEFINE FUNCTION
-    let armenianWordPredictionsArray = decodeArmenianWordPredictionArray(modelOutputsArray); //this will need to be moved into returnModifiedTextArray
+function returnModifiedTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray){
+  let outputIndex = 0;
+  for (const textIndex of englishTextIndexArray){
+    let armenianWordPredictionsArray = decodeArmenianWordPredictionArray(modelOutputsArray[0]);
+    //store additional output options in dictionaryarmenianWordPredictionsArray
+    browser.runtime.sendMessage({message: 'UpdateEnglishToArmenianDictionary', text:  newText, armenianWordPredictionsArray: armenianWordPredictionsArray});
+    currentTextArray[textIndex] = armenianWordPredictionsArray[0];
+    outputIndex++;
+  }
 }
 
 function modifyText(text, modelOutputsArray) {
-    let currentTextArray = text.split(" ");
-    let changedTextIndexArray = returnChangedTextIndexArray(currentTextArray, oldTextArray);
-    let modifiedTextArray = returnModifiedTextArray(changedTextIndexArray, currentTextArray, modelOutputsArray);
+  let currentTextArray = text.split(" ");
+  let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
+  let modifiedTextArray = returnModifiedTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray);
 
-    //reattach array as strng
-    let modifiedText = modifiedTextArray.join(" ");
-    modifiedText += " ";
+  //reattach array as strng
+  let modifiedText = modifiedTextArray.join(" ");
+  modifiedText += " ";
 
-    //store additional output options in dictionaryarmenianWordPredictionsArray
-    browser.runtime.sendMessage({message: 'UpdateEnglishToArmenianDictionary', text:  newText, armenianWordPredictionsArray: armenianWordPredictionsArray}); //ADJUST THIS FOR LOOP WITH MULTIPLE OUTPUTS
-    oldTextArray = modifiedTextArray;
-    return modifiedText;
+  return modifiedText;
   }
   
-  function getModelInputs(text){
-    let englishLetterKeys = {
-      '<unk>': '0',
-      '<pad>': '1',
-      '<s>': '2',
-      'h': '3',
-      'a': '4',
-      'o': '5',
-      'n': '6',
-      'e': '7',
-      't': '8',
-      'r': '9',
-      's': '10',
-      'y': '11',
-      'u': '12',
-      'z': '13',
-      'd': '14',
-      'v': '15',
-      'g': '16',
-      'l': '17',
-      'k': '18',
-      'c': '19',
-      'm': '20',
-      'b': '21',
-      'p': '22',
-      'i': '23',
-      'j': '24',
-      'f': '25'
-    };
+function getModelInputs(text){
+  let englishLetterKeys = {
+    '<unk>': '0',
+    '<pad>': '1',
+    '<s>': '2',
+    'h': '3',
+    'a': '4',
+    'o': '5',
+    'n': '6',
+    'e': '7',
+    't': '8',
+    'r': '9',
+    's': '10',
+    'y': '11',
+    'u': '12',
+    'z': '13',
+    'd': '14',
+    'v': '15',
+    'g': '16',
+    'l': '17',
+    'k': '18',
+    'c': '19',
+    'm': '20',
+    'b': '21',
+    'p': '22',
+    'i': '23',
+    'j': '24',
+    'f': '25'
+  };
 
-    let currentTextArray = text.split(" ");
-    let changedTextIndexArray = returnChangedTextIndexArray(currentTextArray);
-    let modelInputsArray = [];
-    for (const textIndex of changedTextIndexArray){
-      currentTextArray[textKey].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model CAPITALS WILL NEED TO BE ADJUSTED LATER
-      let keyArray = [[2]]; 
-      for (const letter of newText){
-        keyArray.push([Number(englishLetterKeys[letter])]);
-      }
-      //pad for variable length
-      const maxLength = 32;
-      for (let i = keyArray.length; i < maxLength; i++){
-        keyArray.push([1]);
-      }
-      modelInputsArray.push(keyArray);
+  let currentTextArray = text.split(" ");
+  let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
+  let modelInputsArray = [];
+  for (const textIndex of englishTextIndexArray){
+    currentTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model CAPITALS WILL NEED TO BE ADJUSTED LATER
+    let keyArray = [[2]]; 
+    for (const letter of newText){
+      keyArray.push([Number(englishLetterKeys[letter])]);
     }
-
-    return modelInputsArray;
+    //pad for variable length
+    const maxLength = 32;
+    for (let i = keyArray.length; i < maxLength; i++){
+      keyArray.push([1]);
+    }
+    modelInputsArray.push(keyArray);
   }
+
+  return modelInputsArray;
+}
 
   document.addEventListener("keydown", async function(event) {
     if (event.key == " "  || event.code == "Space"){
