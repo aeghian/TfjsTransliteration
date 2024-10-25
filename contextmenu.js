@@ -3,27 +3,22 @@ let englishToArmenianDictionary = {};
 let possibleEnglishArray = [];
 const model = await tf.loadGraphModel('tensorflowjs_model_32_max/model.json');
 
-async function runTensorFlowModel(model, input){
-  try {
+async function runTensorFlowModel(model, modelInputsArray){
+  let modelOutputsArray = [];
+  for (const inputKeys of modelInputsArray){
+    const input = tf.tensor(inputKeys,[32,1], 'int32');
     const result = await model.executeAsync(input);
-    return result.array()
-  } catch (error) {
-    console.error("Error running the model:", error);
-    throw error;
-  } 
+    await result.array().then((data) => {modelOutputsArray.push(data);});
+  }
+  return modelOutputsArray;
 }
 
 browser.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.message == 'RunModel'){
-      let modelOutputsArray= [];
-      for (const inputKeys of request.modelInputsArray){
-        const input = tf.tensor(inputKeys,[32,1], 'int32');
-        runTensorFlowModel(model, input).then(data => {
-          modelOutputsArray.push(data);
-        });
-      }
-      sendResponse({message: modelOutputsArray});
+      runTensorFlowModel(model, request.modelInputsArray).then(data => {
+        sendResponse({message: data});
+      });
     }
     return true; 
   }

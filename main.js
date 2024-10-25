@@ -1,4 +1,3 @@
-//Maybe better way than global variable
 function decodeArmenianWordPredictionArray(outputArray){
   let armenianLetterKeys = {
     '0': '<unk>',
@@ -73,10 +72,12 @@ function decodeArmenianWordPredictionArray(outputArray){
 
 function returnEnglishTextIndex(currentTextArray){
   let englishTextIndexArray = [];
+  let index = 0;
   for (const word of currentTextArray){
     if (/^[a-zA-Z]+$/.test(word)){
-      englishTextIndexArray.push(word);
+      englishTextIndexArray.push(index);
     }
+    index++;
   }
   return englishTextIndexArray;
 }
@@ -84,23 +85,22 @@ function returnEnglishTextIndex(currentTextArray){
 function returnModifiedTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray){
   let outputIndex = 0;
   for (const textIndex of englishTextIndexArray){
-    let armenianWordPredictionsArray = decodeArmenianWordPredictionArray(modelOutputsArray[0]);
+    let armenianWordPredictionsArray = decodeArmenianWordPredictionArray(modelOutputsArray[outputIndex]);
     //store additional output options in dictionaryarmenianWordPredictionsArray
-    browser.runtime.sendMessage({message: 'UpdateEnglishToArmenianDictionary', text:  newText, armenianWordPredictionsArray: armenianWordPredictionsArray});
+    browser.runtime.sendMessage({message: 'UpdateEnglishToArmenianDictionary', text:  currentTextArray[textIndex], armenianWordPredictionsArray: armenianWordPredictionsArray});
     currentTextArray[textIndex] = armenianWordPredictionsArray[0];
     outputIndex++;
   }
+  return currentTextArray;
 }
 
 function modifyText(text, modelOutputsArray) {
   let currentTextArray = text.split(" ");
   let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
   let modifiedTextArray = returnModifiedTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray);
-
   //reattach array as strng
   let modifiedText = modifiedTextArray.join(" ");
   modifiedText += " ";
-
   return modifiedText;
   }
   
@@ -138,9 +138,9 @@ function getModelInputs(text){
   let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
   let modelInputsArray = [];
   for (const textIndex of englishTextIndexArray){
-    currentTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model CAPITALS WILL NEED TO BE ADJUSTED LATER
+    let englighText = currentTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model CAPITALS WILL NEED TO BE ADJUSTED LATER
     let keyArray = [[2]]; 
-    for (const letter of newText){
+    for (const letter of englighText){
       keyArray.push([Number(englishLetterKeys[letter])]);
     }
     //pad for variable length
@@ -155,6 +155,7 @@ function getModelInputs(text){
 }
 
   document.addEventListener("keydown", async function(event) {
+    //ADD TIMER HERE TO WAIT FOR PERSON TO STOP TYPING
     if (event.key == " "  || event.code == "Space"){
       // Get the text that the user is typing.
       let text = event.target.value;
