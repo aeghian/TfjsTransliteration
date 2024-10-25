@@ -104,6 +104,21 @@ function modifyText(text, modelOutputsArray) {
   return modifiedText;
   }
   
+//FINISH THIS FUNCTION
+function returnCleanText(text){
+  let cleanText = [];
+  let nonletterLocation = [];
+  textIndex = 0;
+  for (const word of text.split(" ")){
+    let result = word.replace(/[^a-zA-Z]/g, '');
+    if (result.length > 0){
+      nonletterLocation.push({textIndex: []});
+    }
+    textIndex++;
+  }
+  return cleanText;
+}
+
 function getModelInputs(text){
   let englishLetterKeys = {
     '<unk>': '0',
@@ -133,12 +148,13 @@ function getModelInputs(text){
     'j': '24',
     'f': '25'
   };
-
-  let currentTextArray = text.split(" ");
+  //CAPTURE WHERE CAPITALS ARE TO ADJUST LATER also capture punctuation
+  let cleanText = returnCleanText(text);
+  let  = cleanText.split(" ");
   let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
   let modelInputsArray = [];
   for (const textIndex of englishTextIndexArray){
-    let englighText = currentTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model CAPITALS WILL NEED TO BE ADJUSTED LATER
+    let englighText = currentTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model
     let keyArray = [[2]]; 
     for (const letter of englighText){
       keyArray.push([Number(englishLetterKeys[letter])]);
@@ -162,12 +178,12 @@ function getModelInputs(text){
 
       let modelInputsArray = getModelInputs(text);
 
-      let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray}); //MAKE SURE RESPONSE COMES BACK PROPERLY
+      let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
       // Modify the text.
       let modifiedText = await modifyText(text, modelOutputsArray.message);
       // Set the text back on the element.
       while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
-        event.target.value = modifiedText;
+        evecurrentTextArraynt.target.value = modifiedText;
         await new Promise(r => setTimeout(r, 500)); //needed because some text fields instantly revert text after being changed
       }
     }
