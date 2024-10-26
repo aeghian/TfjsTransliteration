@@ -105,18 +105,38 @@ function modifyText(text, modelOutputsArray) {
   }
   
 //FINISH THIS FUNCTION
-function returnCleanText(text){
+function returnCleanTextAndNonLetterLocation(text){
   let cleanText = [];
   let nonletterLocation = [];
-  textIndex = 0;
+  let nonletterLocationIndex = 0;
   for (const word of text.split(" ")){
-    let result = word.replace(/[^a-zA-Z]/g, '');
+    let nonletters = word.replace(/[^a-zA-Z]/g, '');
+    
+    //make nonlettersUnique
+    let nonlettersUnique = Set(nonletters.split("")).join("");
+    
+
     if (result.length > 0){
-      nonletterLocation.push({textIndex: []});
+      for (const uniqueNonletter of nonlettersUnique){
+        for (const brokenWord of word.split(uniqueNonletter)){
+          nonletterLocation.push({nonletterLocationIndex: uniqueNonletter});
+          cleanText.push(brokenWord);
+          nonletterLocationIndex++;
+        }
+      }
     }
-    textIndex++;
+    else{
+      cleanText.push(word);
+      nonletterLocationIndex++;
+    }
   }
-  return cleanText;
+  return [cleanText, nonletterLocation];
+}
+
+function returnCapitalLocation(cleanText){
+  //DEFINE THIS FUNCTION
+  let capitalLocation = []
+  return capitalLocation;
 }
 
 function getModelInputs(text){
@@ -148,13 +168,14 @@ function getModelInputs(text){
     'j': '24',
     'f': '25'
   };
-  //CAPTURE WHERE CAPITALS ARE TO ADJUST LATER also capture punctuation
-  let cleanText = returnCleanText(text);
-  let  = cleanText.split(" ");
-  let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
+  //capture puntuation
+  let [cleanText, nonLetterLocation] = returnCleanTextAndNonLetterLocation(text);
+  let capitalLocation = returnCapitalLocation(cleanText);
+
+  let englishTextIndexArray = returnEnglishTextIndex(cleanText);
   let modelInputsArray = [];
   for (const textIndex of englishTextIndexArray){
-    let englighText = currentTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model
+    let englighText = cleanText[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model
     let keyArray = [[2]]; 
     for (const letter of englighText){
       keyArray.push([Number(englishLetterKeys[letter])]);
