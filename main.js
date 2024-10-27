@@ -82,7 +82,7 @@ function returnEnglishTextIndex(currentTextArray){
   return englishTextIndexArray;
 }
 
-function returnModifiedTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray){
+function returnarmenianTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray){
   let outputIndex = 0;
   for (const textIndex of englishTextIndexArray){
     let armenianWordPredictionsArray = decodeArmenianWordPredictionArray(modelOutputsArray[outputIndex]);
@@ -94,21 +94,37 @@ function returnModifiedTextArray(englishTextIndexArray, currentTextArray, modelO
   return currentTextArray;
 }
 
-function modifyText(text, modelOutputsArray) {
+function returnCapitalArmenianTextArray(armenianTextArray, capitalLocation){
+  //DEFINE THIS
+}
+
+function returnNonletterArmenianTextArray(capitalArmenianTextArray, nonletterLocations){
+  //DEFINE THIS
+}
+
+function returnModifiedTextArray(armenianTextArray, nonletterLocations, capitalLocation){
+  let capitalArmenianTextArray = returnCapitalArmenianTextArray(armenianTextArray, capitalLocation);
+  let nonletterArmenianTextArray = returnNonletterArmenianTextArray(capitalArmenianTextArray, nonletterLocations); 
+  return nonletterArmenianTextArray;
+}
+
+function modifyText(text, modelOutputsArray, nonletterLocations, capitalLocation) {
   let currentTextArray = text.split(" ");
   let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
-  let modifiedTextArray = returnModifiedTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray);
+  let armenianTextArray = returnarmenianTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray);
+  let modifiedTextArray = returnModifiedTextArray(armenianTextArray, nonletterLocations, capitalLocation);
+  
   //reattach array as strng
   let modifiedText = modifiedTextArray.join(" ");
   modifiedText += " ";
   return modifiedText;
   }
   
-//FINISH THIS FUNCTION
-function returnCleanTextAndNonLetterLocation(text){
-  let cleanText = [];
-  let nonletterLocation = [];
-  let nonletterLocationIndex = 0;
+
+function returncleanTextArrayAndnonletterLocations(text){
+  let cleanTextArray = [];
+  let nonletterLocations = [];
+  let nonletterLocationsIndex = 0;
   for (const word of text.split(" ")){
     let nonletters = word.replace(/[^a-zA-Z]/g, '');
     
@@ -119,23 +135,35 @@ function returnCleanTextAndNonLetterLocation(text){
     if (result.length > 0){
       for (const uniqueNonletter of nonlettersUnique){
         for (const brokenWord of word.split(uniqueNonletter)){
-          nonletterLocation.push({nonletterLocationIndex: uniqueNonletter});
-          cleanText.push(brokenWord);
-          nonletterLocationIndex++;
+          nonletterLocations.push({nonletterLocationsIndex: uniqueNonletter});
+          cleanTextArray.push(brokenWord);
+          nonletterLocationsIndex++;
         }
       }
     }
     else{
-      cleanText.push(word);
-      nonletterLocationIndex++;
+      cleanTextArray.push(word);
+      nonletterLocationsIndex++;
     }
   }
-  return [cleanText, nonletterLocation];
+  return [cleanTextArray, nonletterLocations];
 }
 
-function returnCapitalLocation(cleanText){
-  //DEFINE THIS FUNCTION
-  let capitalLocation = []
+function returnCapitalLocation(cleanTextArray){
+  let capitalLocation = [];
+  let cleanTextArrayIndex = 0;
+  for (const word of cleanTextArray){
+    let letterIndex = 0;
+    let capitalLetterIndexArray = [];
+    for (const letter of word){
+      if (letter == letter.toUpperCase()){
+        capitalLetterIndexArray.push(letterIndex);
+      }
+      letterIndex++;
+    }
+    capitalLocation.push({cleanTextArrayIndex: capitalLetterIndexArray});
+    cleanTextArrayIndex++;
+  }
   return capitalLocation;
 }
 
@@ -168,14 +196,14 @@ function getModelInputs(text){
     'j': '24',
     'f': '25'
   };
-  //capture puntuation
-  let [cleanText, nonLetterLocation] = returnCleanTextAndNonLetterLocation(text);
-  let capitalLocation = returnCapitalLocation(cleanText);
 
-  let englishTextIndexArray = returnEnglishTextIndex(cleanText);
+  let [cleanTextArray, nonletterLocations] = returncleanTextArrayAndnonletterLocations(text);
+  let capitalLocation = returnCapitalLocation(cleanTextArray);
+
+  let englishTextIndexArray = returnEnglishTextIndex(cleanTextArray);
   let modelInputsArray = [];
   for (const textIndex of englishTextIndexArray){
-    let englighText = cleanText[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model
+    let englighText = cleanTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model
     let keyArray = [[2]]; 
     for (const letter of englighText){
       keyArray.push([Number(englishLetterKeys[letter])]);
@@ -188,7 +216,7 @@ function getModelInputs(text){
     modelInputsArray.push(keyArray);
   }
 
-  return modelInputsArray;
+  return [modelInputsArray, nonletterLocations, capitalLocation];
 }
 
   document.addEventListener("keydown", async function(event) {
@@ -197,11 +225,13 @@ function getModelInputs(text){
       // Get the text that the user is typing.
       let text = event.target.value;
 
-      let modelInputsArray = getModelInputs(text);
+      let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
 
       let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
       // Modify the text.
-      let modifiedText = await modifyText(text, modelOutputsArray.message);
+      let modifiedText = await modifyText(text, modelOutputsArray.message, nonletterLocations, capitalLocation);
+      
+
       // Set the text back on the element.
       while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
         evecurrentTextArraynt.target.value = modifiedText;
