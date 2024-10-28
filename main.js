@@ -95,11 +95,28 @@ function returnarmenianTextArray(englishTextIndexArray, currentTextArray, modelO
 }
 
 function returnCapitalArmenianTextArray(armenianTextArray, capitalLocation){
-  //DEFINE THIS
+  for (const armenianTextArrayIndex of  capitalLocation){
+    for (const capitalLocationIndex of capitalLocation[armenianTextArrayIndex]){
+      armenianTextArray[armenianTextArrayIndex][capitalLocationIndex] = armenianTextArray[armenianTextArrayIndex][capitalLocationIndex].toUpperCase();
+    }  
+  }
+  return armenianTextArray;
 }
 
 function returnNonletterArmenianTextArray(capitalArmenianTextArray, nonletterLocations){
-  //DEFINE THIS
+  let modifiedText = "";
+  let capitalArmenianTextArrayIndex = 0;
+  for (const capitalArmenianText of capitalArmenianTextArray){
+    modifiedText += capitalArmenianText;
+    if (capitalArmenianTextArrayIndex in nonletterLocations){
+      modifiedText = nonletterLocations[capitalArmenianTextArrayIndex];
+    }
+    else{
+      modifiedText += " ";
+    }
+    capitalArmenianTextArrayIndex++;  
+  }
+  return modifiedText;
 }
 
 function returnModifiedTextArray(armenianTextArray, nonletterLocations, capitalLocation){
@@ -112,11 +129,8 @@ function modifyText(text, modelOutputsArray, nonletterLocations, capitalLocation
   let currentTextArray = text.split(" ");
   let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
   let armenianTextArray = returnarmenianTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray);
-  let modifiedTextArray = returnModifiedTextArray(armenianTextArray, nonletterLocations, capitalLocation);
-  
-  //reattach array as strng
-  let modifiedText = modifiedTextArray.join(" ");
-  modifiedText += " ";
+  let modifiedText = returnModifiedTextArray(armenianTextArray, nonletterLocations, capitalLocation);
+
   return modifiedText;
   }
   
@@ -132,8 +146,8 @@ function returncleanTextArrayAndnonletterLocations(text){
     let nonlettersUnique = Set(nonletters.split("")).join("");
     
 
-    if (result.length > 0){
-      for (const uniqueNonletter of nonlettersUnique){
+    if (nonlettersUnique.length > 0){
+      for (const uniqueNonletter of nonlettersUnique){ //THIS DOES NOT PROPERLY DEAL WITH MULTIPLE NONLETTERS IN A ROW CHECK IF NEXT CHARACTER IS SPACE
         for (const brokenWord of word.split(uniqueNonletter)){
           nonletterLocations.push({nonletterLocationsIndex: uniqueNonletter});
           cleanTextArray.push(brokenWord);
