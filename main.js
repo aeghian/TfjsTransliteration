@@ -109,7 +109,7 @@ function returnNonletterArmenianTextArray(capitalArmenianTextArray, nonletterLoc
   for (const capitalArmenianText of capitalArmenianTextArray){
     modifiedText += capitalArmenianText;
     if (capitalArmenianTextArrayIndex in nonletterLocations){
-      modifiedText = nonletterLocations[capitalArmenianTextArrayIndex];
+      modifiedText += nonletterLocations[capitalArmenianTextArrayIndex].join("");
     }
     else{
       modifiedText += " ";
@@ -142,38 +142,31 @@ function returncleanTextArrayAndnonletterLocations(text){
   let cleanText = "";
   for (const character of text){
     if (character == " "){
-      cleanTextArray.push(character);
+      if (nonletterLocationsIndex in nonletterLocations){
+        nonletterLocations[nonletterLocationsIndex].push(character);
+      }
+      cleanTextArray.push(cleanText);
+      cleanText = "";
+      nonletterLocationsIndex += 1;
     }
-    else if (){
-      //FINISH THIS ALTERNATIVE METHOD TO DEAL WITH NONLETTERS
-    }
-    else {
-      cleanText += character;
-    }
-    cleanText += character;
-
-  }
-  for (const word of text.split(" ")){
-
-    let nonletters = word.replace(/[^a-zA-Z]/g, '');
-    
-    //make nonlettersUnique
-    let nonlettersUnique = Set(nonletters.split("")).join("");
-    
-    if (nonlettersUnique.length > 0){
-      for (const uniqueNonletter of nonlettersUnique){ //THIS DOES NOT PROPERLY DEAL WITH MULTIPLE NONLETTERS IN A ROW CHECK IF NEXT CHARACTER IS SPACE
-        for (const brokenWord of word.split(uniqueNonletter)){
-          nonletterLocations.push({nonletterLocationsIndex: uniqueNonletter});
-          cleanTextArray.push(brokenWord);
-          nonletterLocationsIndex++;
-        }
+    else if (character.replace(/[^a-zA-Z]/g, '').length > 0){
+      if (nonletterLocationsIndex in nonletterLocations){
+        nonletterLocations[nonletterLocationsIndex].push(character);
+      }
+      else{
+        nonletterLocations.push({nonletterLocationsIndex: [character]});
       }
     }
     else{
-      cleanTextArray.push(word);
-      nonletterLocationsIndex++;
-    }
+      if (nonletterLocationsIndex in nonletterLocations){
+        cleanTextArray.push(cleanText);
+        cleanText = "";
+        nonletterLocationsIndex += 1;
+      }
+      cleanText += character;
+    } 
   }
+
   return [cleanTextArray, nonletterLocations];
 }
 
