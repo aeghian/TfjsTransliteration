@@ -139,13 +139,27 @@ function returncleanTextArrayAndnonletterLocations(text){
   let cleanTextArray = [];
   let nonletterLocations = [];
   let nonletterLocationsIndex = 0;
+  let cleanText = "";
+  for (const character of text){
+    if (character == " "){
+      cleanTextArray.push(character);
+    }
+    else if (){
+      //FINISH THIS ALTERNATIVE METHOD TO DEAL WITH NONLETTERS
+    }
+    else {
+      cleanText += character;
+    }
+    cleanText += character;
+
+  }
   for (const word of text.split(" ")){
+
     let nonletters = word.replace(/[^a-zA-Z]/g, '');
     
     //make nonlettersUnique
     let nonlettersUnique = Set(nonletters.split("")).join("");
     
-
     if (nonlettersUnique.length > 0){
       for (const uniqueNonletter of nonlettersUnique){ //THIS DOES NOT PROPERLY DEAL WITH MULTIPLE NONLETTERS IN A ROW CHECK IF NEXT CHARACTER IS SPACE
         for (const brokenWord of word.split(uniqueNonletter)){
