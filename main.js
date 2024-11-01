@@ -74,7 +74,7 @@ function returnEnglishTextIndex(currentTextArray){
   let englishTextIndexArray = [];
   let index = 0;
   for (const word of currentTextArray){
-    if (/^[a-zA-Z]+$/.test(word)){
+    if (/^[a-zA-Z]+$/.test(word.trim())){
       englishTextIndexArray.push(index);
     }
     index++;
@@ -95,7 +95,8 @@ function returnarmenianTextArray(englishTextIndexArray, currentTextArray, modelO
 }
 
 function returnCapitalArmenianTextArray(armenianTextArray, capitalLocation){
-  for (const armenianTextArrayIndex of  capitalLocation){
+  //FIGURE OUT IF THIS IS WORKING PROPERLY
+  for (const armenianTextArrayIndex in capitalLocation){
     for (const capitalLocationIndex of capitalLocation[armenianTextArrayIndex]){
       armenianTextArray[armenianTextArrayIndex][capitalLocationIndex] = armenianTextArray[armenianTextArrayIndex][capitalLocationIndex].toUpperCase();
     }  
@@ -130,14 +131,13 @@ function modifyText(text, modelOutputsArray, nonletterLocations, capitalLocation
   let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
   let armenianTextArray = returnarmenianTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray);
   let modifiedText = returnModifiedTextArray(armenianTextArray, nonletterLocations, capitalLocation);
-
   return modifiedText;
   }
   
 
 function returncleanTextArrayAndnonletterLocations(text){
   let cleanTextArray = [];
-  let nonletterLocations = [];
+  let nonletterLocations = {};
   let nonletterLocationsIndex = 0;
   let cleanText = "";
   for (const character of text){
@@ -149,12 +149,12 @@ function returncleanTextArrayAndnonletterLocations(text){
       cleanText = "";
       nonletterLocationsIndex += 1;
     }
-    else if (character.replace(/[^a-zA-Z]/g, '').length > 0){
+    else if (/[^A-Za-z0-9]/.test(character)){
       if (nonletterLocationsIndex in nonletterLocations){
         nonletterLocations[nonletterLocationsIndex].push(character);
       }
       else{
-        nonletterLocations.push({nonletterLocationsIndex: [character]});
+        nonletterLocations[nonletterLocationsIndex] = [character];
       }
     }
     else{
@@ -171,7 +171,7 @@ function returncleanTextArrayAndnonletterLocations(text){
 }
 
 function returnCapitalLocation(cleanTextArray){
-  let capitalLocation = [];
+  let capitalLocation = {};
   let cleanTextArrayIndex = 0;
   for (const word of cleanTextArray){
     let letterIndex = 0;
@@ -182,7 +182,9 @@ function returnCapitalLocation(cleanTextArray){
       }
       letterIndex++;
     }
-    capitalLocation.push({cleanTextArrayIndex: capitalLetterIndexArray});
+    if (capitalLetterIndexArray.length > 0){
+      capitalLocation[cleanTextArrayIndex] = capitalLetterIndexArray;
+    }
     cleanTextArrayIndex++;
   }
   return capitalLocation;
@@ -224,9 +226,9 @@ function getModelInputs(text){
   let englishTextIndexArray = returnEnglishTextIndex(cleanTextArray);
   let modelInputsArray = [];
   for (const textIndex of englishTextIndexArray){
-    let englighText = cleanTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed/lowercase for model
+    let englishText = cleanTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed for model
     let keyArray = [[2]]; 
-    for (const letter of englighText){
+    for (const letter of englishText){
       keyArray.push([Number(englishLetterKeys[letter])]);
     }
     //pad for variable length
@@ -236,18 +238,17 @@ function getModelInputs(text){
     }
     modelInputsArray.push(keyArray);
   }
-
   return [modelInputsArray, nonletterLocations, capitalLocation];
 }
 
-  document.addEventListener("keydown", async function(event) {
+
+  document.addEventListener("keyup", async function(event) {
     //ADD TIMER HERE TO WAIT FOR PERSON TO STOP TYPING
     if (event.key == " "  || event.code == "Space"){
       // Get the text that the user is typing.
       let text = event.target.value;
 
       let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
-
       let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
       // Modify the text.
       let modifiedText = await modifyText(text, modelOutputsArray.message, nonletterLocations, capitalLocation);
@@ -255,7 +256,7 @@ function getModelInputs(text){
 
       // Set the text back on the element.
       while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
-        evecurrentTextArraynt.target.value = modifiedText;
+        event.target.value = modifiedText;
         await new Promise(r => setTimeout(r, 500)); //needed because some text fields instantly revert text after being changed
       }
     }
