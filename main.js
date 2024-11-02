@@ -95,10 +95,9 @@ function returnarmenianTextArray(englishTextIndexArray, currentTextArray, modelO
 }
 
 function returnCapitalArmenianTextArray(armenianTextArray, capitalLocation){
-  //FIGURE OUT IF THIS IS WORKING PROPERLY
   for (const armenianTextArrayIndex in capitalLocation){
     for (const capitalLocationIndex of capitalLocation[armenianTextArrayIndex]){
-      armenianTextArray[armenianTextArrayIndex][capitalLocationIndex] = armenianTextArray[armenianTextArrayIndex][capitalLocationIndex].toUpperCase();
+      armenianTextArray[armenianTextArrayIndex] = armenianTextArray[armenianTextArrayIndex].substring(0, capitalLocationIndex) + armenianTextArray[armenianTextArrayIndex][capitalLocationIndex].toUpperCase() + armenianTextArray[armenianTextArrayIndex].substring(capitalLocationIndex + 1);
     }  
   }
   return armenianTextArray;
@@ -150,6 +149,7 @@ function returncleanTextArrayAndnonletterLocations(text){
       nonletterLocationsIndex += 1;
     }
     else if (/[^A-Za-z0-9]/.test(character)){
+      
       if (nonletterLocationsIndex in nonletterLocations){
         nonletterLocations[nonletterLocationsIndex].push(character);
       }
@@ -167,6 +167,9 @@ function returncleanTextArrayAndnonletterLocations(text){
     } 
   }
 
+  //FIGURE OUT WHY THIS ISNT WORKING
+  console.log(nonletterLocations);
+  console.log(cleanTextArray);
   return [cleanTextArray, nonletterLocations];
 }
 
