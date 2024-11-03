@@ -126,7 +126,9 @@ function returnModifiedTextArray(armenianTextArray, nonletterLocations, capitalL
 }
 
 function modifyText(text, modelOutputsArray, nonletterLocations, capitalLocation) {
-  let currentTextArray = text.split(" ");
+  const regex = /[`~!@#$%^&*()_+-=|\;:'"?/.>,<]/gi;
+  text = text.replaceAll(regex, " ");
+  let currentTextArray = text.split(" ").filter(function(entry) { return /\S/.test(entry); });
   let englishTextIndexArray = returnEnglishTextIndex(currentTextArray);
   let armenianTextArray = returnarmenianTextArray(englishTextIndexArray, currentTextArray, modelOutputsArray);
   let modifiedText = returnModifiedTextArray(armenianTextArray, nonletterLocations, capitalLocation);
@@ -148,7 +150,7 @@ function returncleanTextArrayAndnonletterLocations(text){
       cleanText = "";
       nonletterLocationsIndex += 1;
     }
-    else if (/[^A-Za-z0-9]/.test(character)){
+    else if (/[`~!@#$%^&*()_+-=|\;:'"?/.>,<]/.test(character)){
       
       if (nonletterLocationsIndex in nonletterLocations){
         nonletterLocations[nonletterLocationsIndex].push(character);
@@ -167,9 +169,6 @@ function returncleanTextArrayAndnonletterLocations(text){
     } 
   }
 
-  //FIGURE OUT WHY THIS ISNT WORKING
-  console.log(nonletterLocations);
-  console.log(cleanTextArray);
   return [cleanTextArray, nonletterLocations];
 }
 
