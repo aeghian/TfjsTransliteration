@@ -244,25 +244,31 @@ function getModelInputs(text){
 }
 
 
-  document.addEventListener("keyup", async function(event) {
-    //ADD TIMER HERE TO WAIT FOR PERSON TO STOP TYPING
-    if (event.key == " "  || event.code == "Space"){
-      // Get the text that the user is typing.
-      let text = event.target.value;
+const date = new Date();
+let finishedTyping;
+let typingBuffer = 1000;
+document,addEventListener("keydown", async function(event){
+  finishedTyping = date.getTime() + typingBuffer;
+});
+  
+document.addEventListener("keyup", async function(event) {
+  //ADD TIMER HERE TO WAIT FOR PERSON TO STOP TYPING
+  if ((event.key == " "  || event.code == "Space") && date.getTime() > finishedTyping ){
+    // Get the text that the user is typing.
+    let text = event.target.value;
 
-      let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
-      let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
-      // Modify the text.
-      let modifiedText = await modifyText(text, modelOutputsArray.message, nonletterLocations, capitalLocation);
-      
+    let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
+    let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
+    // Modify the text.
+    let modifiedText = await modifyText(text, modelOutputsArray.message, nonletterLocations, capitalLocation);
 
-      // Set the text back on the element.
-      while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
-        event.target.value = modifiedText;
-        await new Promise(r => setTimeout(r, 500)); //needed because some text fields instantly revert text after being changed
-      }
+    // Set the text back on the element.
+    while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
+      event.target.value = modifiedText;
+      await new Promise(r => setTimeout(r, 500)); //needed because some text fields instantly revert text after being changed
     }
-  });
+  }
+});
 
   document.addEventListener("selectionchange", function(event) {
     let selectionStart = event.target.selectionStart;
