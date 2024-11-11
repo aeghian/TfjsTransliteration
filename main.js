@@ -244,16 +244,22 @@ function getModelInputs(text){
 }
 
 
-const date = new Date();
 let finishedTyping;
 let typingBuffer = 1000;
 document,addEventListener("keydown", async function(event){
-  finishedTyping = date.getTime() + typingBuffer;
+  if (event.key != " "){
+    let date = new Date();
+    finishedTyping = date.getTime() + typingBuffer;
+  }
 });
   
 document.addEventListener("keyup", async function(event) {
   //ADD TIMER HERE TO WAIT FOR PERSON TO STOP TYPING
+  let date = new Date();
+  console.log(finishedTyping);
+  console.log(date.getTime());
   if ((event.key == " "  || event.code == "Space") && date.getTime() > finishedTyping ){
+    console.log('here');
     // Get the text that the user is typing.
     let text = event.target.value;
 
