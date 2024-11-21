@@ -282,22 +282,17 @@ document.addEventListener("keyup", async function(event) {
   browser.runtime.onMessage.addListener( 
     function(request) {
       if (request.message == 'ReviseWord'){
-        //probably a better way than looping through every input field. Update later
-        var all_inputs = document.getElementsByTagName('input')
-        for (input of all_inputs){
-          console.log(request.revision);
-          console.log(input);
-          //THIS IS NOT WORKING PROPERLY FIND A DIFFERENT 
-          if (input == document.activeElement){
-            //console.log(request.revision);
-            const start = input.selectionStart;
-            const end = input.selectionEnd;
-            const input_text = input.value;
-            const highlightedText = input_text.slice(start, end);
-            const modified_input_text = input_text.substring(0, start) + request.revision + input_text.substring(end, input_text.length);
-            input.value = modified_input_text;
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => 
+          { if (input == document.activeElement){
+              const start = input.selectionStart;
+              const end = input.selectionEnd;
+              const input_text = input.value;
+              const highlightedText = input_text.slice(start, end);
+              const modified_input_text = input_text.substring(0, start) + request.revision + input_text.substring(end, input_text.length);
+              input.value = modified_input_text;
             }
-        }
+        });
       }
     }
   );
