@@ -1,4 +1,4 @@
-//probably better way to do this than global vars
+//probably better way to do this than global vars CHECK IF THESE ARE POPULATING PROPERLY
 let englishToArmenianDictionary = {};
 let possibleEnglishArray = [];
 const model = await tf.loadGraphModel('tensorflowjs_model_32_max/model.json');
@@ -49,7 +49,7 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
       if (request.message == 'UpdateContextMenu'){
         possibleEnglishArray = [];
         for (const [key, armenianWordPredictionsArray] of Object.entries(englishToArmenianDictionary)) {
-          if (armenianWordPredictionsArray.includes(request.highlightedText)){
+          if (armenianWordPredictionsArray.includes(request.highlightedText.trim())){
             possibleEnglishArray.push(key);
           }
         }

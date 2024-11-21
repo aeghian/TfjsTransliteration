@@ -254,12 +254,8 @@ document,addEventListener("keydown", async function(event){
 });
   
 document.addEventListener("keyup", async function(event) {
-  //ADD TIMER HERE TO WAIT FOR PERSON TO STOP TYPING
   let date = new Date();
-  console.log(finishedTyping);
-  console.log(date.getTime());
   if ((event.key == " "  || event.code == "Space") && date.getTime() > finishedTyping ){
-    console.log('here');
     // Get the text that the user is typing.
     let text = event.target.value;
 
@@ -289,7 +285,11 @@ document.addEventListener("keyup", async function(event) {
         //probably a better way than looping through every input field. Update later
         var all_inputs = document.getElementsByTagName('input')
         for (input of all_inputs){
+          console.log(request.revision);
+          console.log(input);
+          //THIS IS NOT WORKING PROPERLY FIND A DIFFERENT 
           if (input == document.activeElement){
+            //console.log(request.revision);
             const start = input.selectionStart;
             const end = input.selectionEnd;
             const input_text = input.value;
