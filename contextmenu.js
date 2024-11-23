@@ -1,4 +1,3 @@
-//probably better way to do this than global vars CHECK IF THESE ARE POPULATING PROPERLY
 let englishToArmenianDictionary = {};
 let possibleEnglishArray = [];
 const model = await tf.loadGraphModel('tensorflowjs_model_32_max/model.json');

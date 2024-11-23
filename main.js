@@ -282,17 +282,13 @@ document.addEventListener("keyup", async function(event) {
   browser.runtime.onMessage.addListener( 
     function(request) {
       if (request.message == 'ReviseWord'){
-        const inputs = document.querySelectorAll('input, textarea');
-        inputs.forEach(input => 
-          { if (input == document.activeElement){
-              const start = input.selectionStart;
-              const end = input.selectionEnd;
-              const input_text = input.value;
-              const highlightedText = input_text.slice(start, end);
-              const modified_input_text = input_text.substring(0, start) + request.revision + input_text.substring(end, input_text.length);
-              input.value = modified_input_text;
-            }
-        });
+        input = document.activeElement;
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const input_text = input.value;
+        const highlightedText = input_text.slice(start, end);
+        const modified_input_text = input_text.substring(0, start) + request.revision + input_text.substring(end, input_text.length);
+        input.value = modified_input_text;        
       }
     }
   );
