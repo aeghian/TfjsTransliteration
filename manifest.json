@@ -9,7 +9,8 @@
   ],
   "version":"1.0",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
-  "name":"Test",
+  "name":"AutomatedTransliteration",
+  "description": "This browser extension provides a process to read tensorflow models within a browser for the purpose of replacing foriegn words spelled phonetically in english with equivalents in their native alphabet. The initial version of this extention is provided with a model for western armenian, but this can be swapped for other models via the options page.",
   "background":{
     "page": "background.html",
     "persistent": false
