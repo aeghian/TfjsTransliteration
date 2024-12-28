@@ -229,7 +229,7 @@ function getModelInputs(text){
   let modelInputsArray = [];
   for (const textIndex of englishTextIndexArray){
     let englishText = cleanTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed for model
-    let keyArray = [[2]]; 
+    let keyArray = [[2]]; //This may need to be adjusted to be more general
     for (const letter of englishText){
       keyArray.push([Number(englishLetterKeys[letter])]);
     }
@@ -267,7 +267,7 @@ document.addEventListener("keyup", async function(event) {
     // Set the text back on the element.
     while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
       event.target.value = modifiedText;
-      await new Promise(r => setTimeout(r, 500)); //needed because some text fields instantly revert text after being changed
+      await new Promise(r => setTimeout(r, 500)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
     }
   }
 });
