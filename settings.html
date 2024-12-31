@@ -8,11 +8,16 @@
 </head>
 <body>
   <h1>Settings</h1>
-  <p>Model:</p>
-  <p>Max Word Length:</p>
-  <p>Letter Keys:</p>
-  <p>Typing Buffer:</p>
-  <p>Letter Keys:</p>
+  <label for="model">Model:</label>
+  <input type="button" id="model" name="model" value="File Location"><br>
+  <label for="wordLength">Max Word Length:</label>
+  <input type="text" id="wordLength" name="wordLength" value="32"><br>
+  <label for="letterKeys">Letter Keys:</label>
+  <input type="button" id="letterKeys" name="letterKeys" value="File Location"><br>
+  <label for="typingBuffer">Typing Buffer (ms):</label>
+  <input type="text" id="typingBuffer" name="typingBuffer" value="1000"><br>
+  <label for="revertTimer">Text Revert Timer (ms):</label>
+  <input type="text" id="revertTimer" name="revertTimer" value="500"><br>
   <button id="saveButton">Save Settings</button>
   <script src="settings.js"></script>
 </body>
