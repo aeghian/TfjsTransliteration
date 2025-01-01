@@ -1,6 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveButton').addEventListener('click', function() {
-      // Handle saving settings here
+      let modelLocation = document.getElementById('modelLocation').value;
+      let wordLength = document.getElementById('wordLength').value;
+      let letterKeys = document.getElementById('letterKeys').value;
+      let typingBuffer = document.getElementById('typingBuffer').value;
+      let revertTimer = document.getElementById('revertTimer').value;
+      browser.runtime.sendMessage({message: 'SaveSettings', modelLocation: modelLocation, wordLength: wordLength, letterKeys: letterKeys, typingBuffer: typingBuffer, revertTimer: revertTimer});
       console.log('Settings saved!');
     });
   });

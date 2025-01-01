@@ -1,3 +1,10 @@
+//Settings (DISTRIBUTE THESE TO WHERE THEY NEED TO GO)
+let modelLocation;
+let wordLength;
+let letterKeys;
+let typingBuffer;
+let revertTimer;
+
 function decodeArmenianWordPredictionArray(outputArray){
   let armenianLetterKeys = {
     '0': '<unk>',
@@ -245,7 +252,6 @@ function getModelInputs(text){
 
 
 let finishedTyping;
-let typingBuffer = 1000;
 document,addEventListener("keydown", async function(event){
   if (event.key != " "){
     let date = new Date();
@@ -289,6 +295,18 @@ document.addEventListener("keyup", async function(event) {
         const highlightedText = input_text.slice(start, end);
         const modified_input_text = input_text.substring(0, start) + request.revision + input_text.substring(end, input_text.length);
         input.value = modified_input_text;        
+      }
+    }
+  );
+
+  browser.runtime.onMessage.addListener(
+    function(request) {
+      if (request.message == 'SaveSettings'){
+        modelLocation = request.modelLocation;
+        wordLength = request.wordLength;
+        letterKeys = request.letterKeys;
+        typingBuffer = request.typingBuffer;
+        revertTimer = request.revertTimer;
       }
     }
   );

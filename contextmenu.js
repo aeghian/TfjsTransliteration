@@ -2,6 +2,13 @@ let englishToArmenianDictionary = {};
 let possibleEnglishArray = [];
 const model = await tf.loadGraphModel('tensorflowjs_model_32_max/model.json');
 
+//Settings
+let modelLocation;
+let wordLength;
+let letterKeys;
+let typingBuffer;
+let revertTimer;
+
 async function runTensorFlowModel(model, modelInputsArray){
   let modelOutputsArray = [];
   for (const inputKeys of modelInputsArray){
@@ -79,3 +86,14 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
       }
     });
 
+browser.runtime.onMessage.addListener(
+  function(request) {
+    if (request.message == 'SaveSettings'){
+      modelLocation = request.modelLocation;
+      wordLength = request.wordLength;
+      letterKeys = request.letterKeys;
+      typingBuffer = request.typingBuffer;
+      revertTimer = request.revertTimer;
+    }
+  }
+);
