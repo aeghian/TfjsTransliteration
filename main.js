@@ -5,7 +5,7 @@ let letterKeys;
 let typingBuffer;
 let revertTimer;
 
-function decodeArmenianWordPredictionArray(outputArray){
+function decodeArmenianWordPredictionArray(outputArray){ //create text file and parser for this
   let armenianLetterKeys = {
     '0': '<unk>',
     '1': '<pad>',
@@ -240,9 +240,9 @@ function getModelInputs(text){
     for (const letter of englishText){
       keyArray.push([Number(englishLetterKeys[letter])]);
     }
+    
     //pad for variable length
-    const maxLength = 32;
-    for (let i = keyArray.length; i < maxLength; i++){
+    for (let i = keyArray.length; i < wordLength; i++){
       keyArray.push([1]);
     }
     modelInputsArray.push(keyArray);
@@ -273,7 +273,7 @@ document.addEventListener("keyup", async function(event) {
     // Set the text back on the element.
     while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
       event.target.value = modifiedText;
-      await new Promise(r => setTimeout(r, 500)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
+      await new Promise(r => setTimeout(r, revertTimer)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
     }
   }
 });
@@ -302,7 +302,7 @@ document.addEventListener("keyup", async function(event) {
   browser.runtime.onMessage.addListener(
     function(request) {
       if (request.message == 'SaveSettings'){
-        modelLocation = request.modelLocation;
+        modelLocation = request.modelLocation; //unused
         wordLength = request.wordLength;
         letterKeys = request.letterKeys;
         typingBuffer = request.typingBuffer;

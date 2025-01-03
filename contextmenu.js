@@ -1,9 +1,8 @@
 let englishToArmenianDictionary = {};
 let possibleEnglishArray = [];
-const model = await tf.loadGraphModel('tensorflowjs_model_32_max/model.json');
 
 //Settings
-let modelLocation;
+let model;
 let wordLength;
 let letterKeys;
 let typingBuffer;
@@ -12,7 +11,7 @@ let revertTimer;
 async function runTensorFlowModel(model, modelInputsArray){
   let modelOutputsArray = [];
   for (const inputKeys of modelInputsArray){
-    const input = tf.tensor(inputKeys,[32,1], 'int32');
+    const input = tf.tensor(inputKeys,[wordLength,1], 'int32');
     const result = await model.executeAsync(input);
     await result.array().then((data) => {modelOutputsArray.push(data);});
   }
@@ -87,13 +86,13 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
     });
 
 browser.runtime.onMessage.addListener(
-  function(request) {
+ async function(request) {
     if (request.message == 'SaveSettings'){
-      modelLocation = request.modelLocation;
+      model = await tf.loadGraphModel(request.modelLocation);
       wordLength = request.wordLength;
-      letterKeys = request.letterKeys;
-      typingBuffer = request.typingBuffer;
-      revertTimer = request.revertTimer;
+      letterKeys = request.letterKeys; //unused
+      typingBuffer = request.typingBuffer; //unused
+      revertTimer = request.revertTimer; //unused
     }
   }
 );
