@@ -1,66 +1,13 @@
 //Settings (DISTRIBUTE THESE TO WHERE THEY NEED TO GO)
 let modelLocation;
 let wordLength;
-let letterKeys;
+let armenianLetterKeys;
+let englishLetterKeys;
 let typingBuffer;
 let revertTimer;
 
-function decodeArmenianWordPredictionArray(outputArray){ //create text file and parser for this
-  let armenianLetterKeys = {
-    '0': '<unk>',
-    '1': '<pad>',
-    '2': '<os>',
-    '3': '</os>',
-    '4': 'ա',
-    '5': 'ն',
-    '6': 'ե',
-    '7': 'ր',
-    '8': 'ու',
-    '9': 'ց',
-    '10': 'թ',
-    '11': 'լ',
-    '12': 'իւ',
-    '13': 'տ',
-    '14': 'կ',
-    '15': 'ո',
-    '16': 'գ',
-    '17': 'ս',
-    '18': 'ի',
-    '19': 'ւ',
-    '20': 'ծ',
-    '21': 'ք',
-    '22': 'մ',
-    '23': 'ղ',
-    '24': 'պ',
-    '25': 'ուե',
-    '26': 'ռ',
-    '27': 'հ',
-    '28': 'ձ',
-    '29': 'դ',
-    '30': 'բ',
-    '31': 'յ',
-    '32': 'խ',
-    '33': 'շ',
-    '34': 'զ',
-    '35': 'վ',
-    '36': 'ժ',
-    '37': 'ուա',
-    '38': 'չ',
-    '39': 'փ',
-    '40': 'օ',
-    '41': 'ոյ',
-    '42': 'է',
-    '43': 'ջ',
-    '44': 'ը',
-    '45': 'ճ',
-    '46': 'ուի',
-    '47': 'ուո',
-    '48': 'ֆ',
-    '49': 'ուէ',
-    '50': 'ուը',
-    '51': 'ուօ'
-  };
 
+function decodeArmenianWordPredictionArray(outputArray){
   let placeholderArray = [];
   for (const prediction of outputArray){
     let placeholderData = '';
@@ -200,35 +147,6 @@ function returnCapitalLocation(cleanTextArray){
 }
 
 function getModelInputs(text){
-  let englishLetterKeys = {
-    '<unk>': '0',
-    '<pad>': '1',
-    '<s>': '2',
-    'h': '3',
-    'a': '4',
-    'o': '5',
-    'n': '6',
-    'e': '7',
-    't': '8',
-    'r': '9',
-    's': '10',
-    'y': '11',
-    'u': '12',
-    'z': '13',
-    'd': '14',
-    'v': '15',
-    'g': '16',
-    'l': '17',
-    'k': '18',
-    'c': '19',
-    'm': '20',
-    'b': '21',
-    'p': '22',
-    'i': '23',
-    'j': '24',
-    'f': '25'
-  };
-
   let [cleanTextArray, nonletterLocations] = returncleanTextArrayAndnonletterLocations(text);
   let capitalLocation = returnCapitalLocation(cleanTextArray);
 
@@ -299,12 +217,28 @@ document.addEventListener("keyup", async function(event) {
     }
   );
 
+  function parseLetterKeysFile(letterKeysLocation){
+    let reader = new FileReader();
+    reader.onload = function(progressEvent) {
+      let lines = this.result.split('\n');
+      for (const line of lines) {
+        dictKey, dictElement = line.split(':');
+        if (isNan(letterKeysLocation)){
+          armenianLetterKeys[dictKey] = dictElement;
+        }
+        else{
+          englishLetterKeys[dictKey] = dictElement;
+        }
+      }
+    };
+  }
+
   browser.runtime.onMessage.addListener(
     function(request) {
       if (request.message == 'SaveSettings'){
         modelLocation = request.modelLocation; //unused
         wordLength = request.wordLength;
-        letterKeys = request.letterKeys;
+        parseLetterKeysFile(request.letterKeysLocation);
         typingBuffer = request.typingBuffer;
         revertTimer = request.revertTimer;
       }

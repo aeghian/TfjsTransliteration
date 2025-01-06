@@ -90,7 +90,7 @@ browser.runtime.onMessage.addListener(
     if (request.message == 'SaveSettings'){
       model = await tf.loadGraphModel(request.modelLocation);
       wordLength = request.wordLength;
-      letterKeys = request.letterKeys; //unused
+      letterKeys = request.letterKeysLocation; //unused
       typingBuffer = request.typingBuffer; //unused
       revertTimer = request.revertTimer; //unused
     }
