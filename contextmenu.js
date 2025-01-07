@@ -4,7 +4,7 @@ let possibleEnglishArray = [];
 //Settings
 let model;
 let wordLength;
-let letterKeys;
+let letterKeysLocation;
 let typingBuffer;
 let revertTimer;
 
@@ -90,9 +90,14 @@ browser.runtime.onMessage.addListener(
     if (request.message == 'SaveSettings'){
       model = await tf.loadGraphModel(request.modelLocation);
       wordLength = request.wordLength;
-      letterKeys = request.letterKeysLocation; //unused
+      letterKeysLocation = request.letterKeysLocation; //unused
       typingBuffer = request.typingBuffer; //unused
       revertTimer = request.revertTimer; //unused
+    //need to send message from context to main
+    browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      browser.tabs.sendMessage(tabs[0].id, { message: "SaveSettings", wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer});
+    });
     }
   }
 );
+

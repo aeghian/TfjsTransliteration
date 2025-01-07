@@ -1,8 +1,7 @@
-//Settings (DISTRIBUTE THESE TO WHERE THEY NEED TO GO)
-let modelLocation;
+//Settings
 let wordLength;
-let armenianLetterKeys;
-let englishLetterKeys;
+let armenianLetterKeys = {};
+let englishLetterKeys = {};
 let typingBuffer;
 let revertTimer;
 
@@ -218,12 +217,14 @@ document.addEventListener("keyup", async function(event) {
   );
 
   function parseLetterKeysFile(letterKeysLocation){
+    console.log('parser');
     let reader = new FileReader();
-    reader.onload = function(progressEvent) {
-      let lines = this.result.split('\n');
+    reader.onload = function(e) { //REDO FILE READING
+      let lines = e.target.result.split('\n');
       for (const line of lines) {
+        console.log(line);
         dictKey, dictElement = line.split(':');
-        if (isNan(letterKeysLocation)){
+        if (isNan(dictElement)){
           armenianLetterKeys[dictKey] = dictElement;
         }
         else{
@@ -231,14 +232,16 @@ document.addEventListener("keyup", async function(event) {
         }
       }
     };
+    reader.readAsText(letterKeysLocation);
   }
 
   browser.runtime.onMessage.addListener(
     function(request) {
       if (request.message == 'SaveSettings'){
-        modelLocation = request.modelLocation; //unused
         wordLength = request.wordLength;
         parseLetterKeysFile(request.letterKeysLocation);
+        console.log(armenianLetterKeys);
+        console.log(englishLetterKeys);
         typingBuffer = request.typingBuffer;
         revertTimer = request.revertTimer;
       }
