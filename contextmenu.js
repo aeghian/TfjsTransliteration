@@ -1,7 +1,7 @@
 let englishToArmenianDictionary = {};
 let possibleEnglishArray = [];
 
-//Settings
+//Settings (set detauls)
 let model;
 let wordLength;
 let letterKeysLocation;
@@ -89,14 +89,14 @@ browser.runtime.onMessage.addListener(
  async function(request) {
     if (request.message == 'SaveSettings'){
       model = await tf.loadGraphModel(request.modelLocation);
-      wordLength = request.wordLength;
+      wordLength = Number(request.wordLength);
       letterKeysLocation = request.letterKeysLocation; //unused
-      typingBuffer = request.typingBuffer; //unused
-      revertTimer = request.revertTimer; //unused
-    //need to send message from context to main
-    browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
-      browser.tabs.sendMessage(tabs[0].id, { message: "SaveSettings", wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer});
-    });
+      typingBuffer = Number(request.typingBuffer); //unused
+      revertTimer = Number(request.revertTimer); //unused
+      //need to send message from context to main
+      browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        browser.tabs.sendMessage(tabs[0].id, { message: "SaveSettings", wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer});
+      });
     }
   }
 );

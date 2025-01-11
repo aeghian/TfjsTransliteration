@@ -1,4 +1,4 @@
-//Settings
+//Settings (Set defaults)
 let wordLength;
 let armenianLetterKeys = {};
 let englishLetterKeys = {};
@@ -179,11 +179,14 @@ document,addEventListener("keydown", async function(event){
 document.addEventListener("keyup", async function(event) {
   let date = new Date();
   if ((event.key == " "  || event.code == "Space") && date.getTime() > finishedTyping ){
+    console.log('here');
+
     // Get the text that the user is typing.
     let text = event.target.value;
 
     let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
     let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
+    console.log(modelOutputsArray); //This is not setting properly, but it is calculating in contextmenu
     // Modify the text.
     let modifiedText = await modifyText(text, modelOutputsArray.message, nonletterLocations, capitalLocation);
 
@@ -217,31 +220,28 @@ document.addEventListener("keyup", async function(event) {
   );
 
   function parseLetterKeysFile(letterKeysLocation){
-    console.log('parser');
-    let reader = new FileReader();
-    reader.onload = function(e) { //REDO FILE READING
-      let lines = e.target.result.split('\n');
-      for (const line of lines) {
-        console.log(line);
-        dictKey, dictElement = line.split(':');
-        if (isNan(dictElement)){
-          armenianLetterKeys[dictKey] = dictElement;
+    url = browser.runtime.getURL(letterKeysLocation);
+    fetch(url)
+      .then((res) => res.text())
+      .then((text) => {
+        for (const line of text.split(/\r?\n/)){
+          let [dictKey, dictElement] = line.split(":");
+          if (isNaN(dictElement)){
+            armenianLetterKeys[dictKey] = dictElement;
+          } 
+          else{
+            englishLetterKeys[dictKey] = dictElement;
+          }
         }
-        else{
-          englishLetterKeys[dictKey] = dictElement;
-        }
-      }
-    };
-    reader.readAsText(letterKeysLocation);
-  }
+      })
+      .catch((e) => console.error(e));
+  };
 
   browser.runtime.onMessage.addListener(
     function(request) {
       if (request.message == 'SaveSettings'){
         wordLength = request.wordLength;
         parseLetterKeysFile(request.letterKeysLocation);
-        console.log(armenianLetterKeys);
-        console.log(englishLetterKeys);
         typingBuffer = request.typingBuffer;
         revertTimer = request.revertTimer;
       }
