@@ -23,6 +23,7 @@ async function runTensorFlowModel(model, modelInputsArray){
 browser.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.message == 'RunModel'){
+      sendResponse({message: 'data'});
       runTensorFlowModel(model, request.modelInputsArray).then(data => {
         console.log(data);
         sendResponse({message: data});
