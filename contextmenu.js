@@ -13,21 +13,24 @@ async function runTensorFlowModel(model, modelInputsArray){
   for (const inputKeys of modelInputsArray){
     const input = tf.tensor(inputKeys,[wordLength,1], 'int32');
     const result = await model.executeAsync(input);
-    await result.array().then((data) => {modelOutputsArray.push(data);});
+    const data = await result.array();
+    modelOutputsArray.push(data);
   }
   return modelOutputsArray;
 }
+
 
 browser.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.message == 'RunModel'){
       runTensorFlowModel(model, request.modelInputsArray).then(data => {
+        console.log(data);
         sendResponse({message: data});
       });
     }
-    return true; 
-  }
-);
+    return true;
+  });
+
 
 browser.runtime.onMessage.addListener(
   function(request) {

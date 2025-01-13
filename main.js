@@ -186,7 +186,7 @@ document.addEventListener("keyup", async function(event) {
 
     let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
     let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
-    console.log(modelOutputsArray); //This is not setting properly, but it is calculating in contextmenu
+    console.log(modelOutputsArray); //This is not setting properly, but it is calculating in contextmenu TRY MAKING IT A PROMISE
     // Modify the text.
     let modifiedText = await modifyText(text, modelOutputsArray.message, nonletterLocations, capitalLocation);
 
