@@ -185,18 +185,39 @@ document.addEventListener("keyup", async function(event) {
     let text = event.target.value;
 
     let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
-    let modelOutputsArray = await browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
-    console.log(modelOutputsArray); //This is not setting properly, but it is calculating in contextmenu TRY MAKING IT A PROMISE
-    // Modify the text.
-    let modifiedText = await modifyText(text, modelOutputsArray.message, nonletterLocations, capitalLocation);
-
-    // Set the text back on the element.
-    while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
-      event.target.value = modifiedText;
-      await new Promise(r => setTimeout(r, revertTimer)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
-    }
+    browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
+    browser.runtime.onMessage.addListener(
+      async function(request) {
+        if (request.message == 'ModelReturn'){
+          console.log(text);
+          // Modify the text.
+          let modifiedText = await modifyText(text, request.data, nonletterLocations, capitalLocation);
+          // Set the text back on the element.
+          while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
+            event.target.value = modifiedText;
+            await new Promise(r => setTimeout(r, revertTimer)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
+          }
+        }
+      }
+    );
   }
 });
+
+// browser.runtime.onMessage.addListener(
+//   async function(request) {
+//     if (request.message == 'ModelReturn'){
+//       let text = request.event.target.value;
+//       // Modify the text.
+//       let modifiedText = await modifyText(text, request.data, nonletterLocations, capitalLocation);
+
+//       // Set the text back on the element.
+//       while (request.event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
+//         request.event.target.value = modifiedText;
+//         await new Promise(r => setTimeout(r, revertTimer)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
+//       }
+//     }
+//   }
+// );
 
   document.addEventListener("selectionchange", function(event) {
     let selectionStart = event.target.selectionStart;

@@ -19,17 +19,14 @@ async function runTensorFlowModel(model, modelInputsArray){
   return modelOutputsArray;
 }
 
-
 browser.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.message == 'RunModel'){
-      sendResponse({message: 'data'});
       runTensorFlowModel(model, request.modelInputsArray).then(data => {
-        console.log(data);
-        sendResponse({message: data});
+        browser.tabs.sendMessage(sender.tab.id, {message: 'ModelReturn', data: data});
       });
+      return true;
     }
-    return true;
   });
 
 
