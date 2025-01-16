@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
       let letterKeysLocation = document.getElementById('letterKeysLocation').value;
       let typingBuffer = document.getElementById('typingBuffer').value;
       let revertTimer = document.getElementById('revertTimer').value;
-      browser.runtime.sendMessage({message: 'SaveSettings', modelLocation: modelLocation, wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer});
+      let firstToken = document.getElementById('firstToken').value;
+      browser.runtime.sendMessage({message: 'SaveSettings', modelLocation: modelLocation, wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
     });
   });
 

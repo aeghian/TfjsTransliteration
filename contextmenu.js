@@ -7,6 +7,7 @@ let wordLength;
 let letterKeysLocation;
 let typingBuffer;
 let revertTimer;
+let firstToken;
 
 async function runTensorFlowModel(model, modelInputsArray){
   let modelOutputsArray = [];
@@ -94,9 +95,10 @@ browser.runtime.onMessage.addListener(
       letterKeysLocation = request.letterKeysLocation; //unused
       typingBuffer = Number(request.typingBuffer); //unused
       revertTimer = Number(request.revertTimer); //unused
+      firstToken = Number(request.firstToken); //unused
       //need to send message from context to main
       browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
-        browser.tabs.sendMessage(tabs[0].id, { message: "SaveSettings", wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer});
+        browser.tabs.sendMessage(tabs[0].id, { message: "SaveSettings", wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
       });
     }
   }

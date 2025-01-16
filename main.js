@@ -1,9 +1,10 @@
-//Settings (Set defaults)
+//Settings (Set defaults)/ensure settings carry between page reloads
 let wordLength;
 let armenianLetterKeys = {};
 let englishLetterKeys = {};
 let typingBuffer;
 let revertTimer;
+let firstToken;
 
 
 function decodeArmenianWordPredictionArray(outputArray){
@@ -153,7 +154,10 @@ function getModelInputs(text){
   let modelInputsArray = [];
   for (const textIndex of englishTextIndexArray){
     let englishText = cleanTextArray[textIndex].toLowerCase().split("").reverse().join(""); //input needs to be reversed for model
-    let keyArray = [[2]]; //This may need to be adjusted to be more general
+    let keyArray = [];
+    if (!isNaN(firstToken)){
+      keyArray.push([firstToken]);
+    }
     for (const letter of englishText){
       keyArray.push([Number(englishLetterKeys[letter])]);
     }
@@ -179,9 +183,9 @@ document,addEventListener("keydown", async function(event){
 document.addEventListener("keyup", async function(event) {
   let date = new Date();
   if ((event.key == " "  || event.code == "Space") && date.getTime() > finishedTyping ){
-    console.log('here');
+    console.log('here');//REMEMBER TO REMOVE
 
-    // Get the text that the user is typing.
+    // Get the text user is typing.
     let text = event.target.value;
 
     let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
@@ -189,7 +193,6 @@ document.addEventListener("keyup", async function(event) {
     browser.runtime.onMessage.addListener(
       async function(request) {
         if (request.message == 'ModelReturn'){
-          console.log(text);
           // Modify the text.
           let modifiedText = await modifyText(text, request.data, nonletterLocations, capitalLocation);
           // Set the text back on the element.
@@ -202,22 +205,6 @@ document.addEventListener("keyup", async function(event) {
     );
   }
 });
-
-// browser.runtime.onMessage.addListener(
-//   async function(request) {
-//     if (request.message == 'ModelReturn'){
-//       let text = request.event.target.value;
-//       // Modify the text.
-//       let modifiedText = await modifyText(text, request.data, nonletterLocations, capitalLocation);
-
-//       // Set the text back on the element.
-//       while (request.event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
-//         request.event.target.value = modifiedText;
-//         await new Promise(r => setTimeout(r, revertTimer)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
-//       }
-//     }
-//   }
-// );
 
   document.addEventListener("selectionchange", function(event) {
     let selectionStart = event.target.selectionStart;
@@ -265,6 +252,7 @@ document.addEventListener("keyup", async function(event) {
         parseLetterKeysFile(request.letterKeysLocation);
         typingBuffer = request.typingBuffer;
         revertTimer = request.revertTimer;
+        firstToken = request.firstToken;
       }
     }
   );
