@@ -183,7 +183,6 @@ async function changeUserText(event) {
   let date = new Date();
   if ((event.key == " "  || event.code == "Space") && date.getTime() > finishedTyping ){
     console.log('here');//REMEMBER TO REMOVE
-
     // Get the text user is typing.
     let text = event.target.value;
 
@@ -248,6 +247,9 @@ function saveMainSettings(request) {
   revertTimer = request.revertTimer;
   firstToken = request.firstToken;
 }
+
+//FIND A WAY TO READ LOCAL STORAGE FROM CONTENT SCRIPT
+console.log('load');
 
 browser.runtime.onMessage.addListener(function(request){
   if (request.message == 'ActivateListeners'){
