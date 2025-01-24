@@ -45,7 +45,7 @@ function sendReviseWordMessage(info, tab){
   }
 }
 
-function updateContextMenuListender(request) {
+function updateContextMenuListener(request) {
   if (request.message == 'UpdateContextMenu'){
     possibleEnglishArray = [];
     for (const [key, armenianWordPredictionsArray] of Object.entries(englishToArmenianDictionary)) {
@@ -80,24 +80,38 @@ function updateContextMenuListender(request) {
   }
 }
 
-async function saveContextMenuSettingsListener(request) {
-  if (request.message == 'SaveSettings'){
-    model = await tf.loadGraphModel(request.modelLocation);
-    wordLength = Number(request.wordLength);
-    letterKeysLocation = request.letterKeysLocation; //unused
-    typingBuffer = Number(request.typingBuffer); //unused
-    revertTimer = Number(request.revertTimer); //unused
-    firstToken = Number(request.firstToken); //unused
-    //need to send message from context to main
-    browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
-      browser.tabs.sendMessage(tabs[0].id, { message: "SaveSettings", wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
-    });
-  }
+async function saveContextMenuSettings(request) {
+  model = await tf.loadGraphModel(request.modelLocation);
+  wordLength = Number(request.wordLength);
+  letterKeysLocation = request.letterKeysLocation; //unused
+  typingBuffer = Number(request.typingBuffer); //unused
+  revertTimer = Number(request.revertTimer); //unused
+  firstToken = Number(request.firstToken); //unused
+  //need to send message from context to main
+  browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
+    browser.tabs.sendMessage(tabs[0].id, { message: "ActivateListeners", wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
+  });
 }
 
-browser.runtime.onMessage.addListener(runTensorFlowModelListener);
-browser.runtime.onMessage.addListener(updateEnglishToArmenianDictionaryListener);
-browser.contextMenus.onClicked.addListener(sendReviseWordMessage);
-browser.runtime.onMessage.addListener(updateContextMenuListender);
-browser.runtime.onMessage.addListener(saveContextMenuSettingsListener);
+browser.runtime.onMessage.addListener(function(request){
+  if (request.message == 'ActivateListeners'){
+    saveContextMenuSettings(request);
+    browser.runtime.onMessage.addListener(runTensorFlowModelListener);
+    browser.runtime.onMessage.addListener(updateEnglishToArmenianDictionaryListener);
+    browser.contextMenus.onClicked.addListener(sendReviseWordMessage);
+    browser.runtime.onMessage.addListener(updateContextMenuListener);
+  }
+});
+
+browser.runtime.onMessage.addListener(function(request){
+  if (request.message == 'RemoveListeners'){
+    browser.runtime.onMessage.removeListener(runTensorFlowModelListener);
+    browser.runtime.onMessage.removeListener(updateEnglishToArmenianDictionaryListener);
+    browser.contextMenus.onClicked.removeListener(sendReviseWordMessage);
+    browser.runtime.onMessage.removeListener(updateContextMenuListener);
+    browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      browser.tabs.sendMessage(tabs[0].id, { message: "RemoveListeners"});
+    });
+  }
+});
 

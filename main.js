@@ -242,17 +242,28 @@ function parseLetterKeysFile(letterKeysLocation){
 };
 
 function saveMainSettings(request) {
-  if (request.message == 'SaveSettings'){
-    wordLength = request.wordLength;
-    parseLetterKeysFile(request.letterKeysLocation);
-    typingBuffer = request.typingBuffer;
-    revertTimer = request.revertTimer;
-    firstToken = request.firstToken;
-  }
+  wordLength = request.wordLength;
+  parseLetterKeysFile(request.letterKeysLocation);
+  typingBuffer = request.typingBuffer;
+  revertTimer = request.revertTimer;
+  firstToken = request.firstToken;
 }
 
-document.addEventListener("keydown", setFinishedTyping);
-document.addEventListener("keyup", changeUserText);
-document.addEventListener("selectionchange", updateContextMenu);
-browser.runtime.onMessage.addListener(contextMenuReviseWord);
-browser.runtime.onMessage.addListener(saveMainSettings);
+browser.runtime.onMessage.addListener(function(request){
+  if (request.message == 'ActivateListeners'){
+    saveMainSettings(request);
+    document.addEventListener("keydown", setFinishedTyping);
+    document.addEventListener("keyup", changeUserText);
+    document.addEventListener("selectionchange", updateContextMenu);
+    browser.runtime.onMessage.addListener(contextMenuReviseWord);
+  }
+});
+
+browser.runtime.onMessage.addListener(function(request){
+  if (request.message == 'RemoveListeners'){
+    document.removeEventListener("keydown", setFinishedTyping);
+    document.removeEventListener("keyup", changeUserText);
+    document.removeEventListener("selectionchange", updateContextMenu);
+    browser.runtime.onMessage.removeListener(contextMenuReviseWord);
+  }
+});
