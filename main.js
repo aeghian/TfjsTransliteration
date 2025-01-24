@@ -122,7 +122,6 @@ function returncleanTextArrayAndnonletterLocations(text){
       cleanText += character;
     } 
   }
-
   return [cleanTextArray, nonletterLocations];
 }
 
@@ -173,14 +172,14 @@ function getModelInputs(text){
 
 
 let finishedTyping;
-document,addEventListener("keydown", async function(event){
+async function setFinishedTyping(event){
   if (event.key != " "){
     let date = new Date();
     finishedTyping = date.getTime() + typingBuffer;
   }
-});
-  
-document.addEventListener("keyup", async function(event) {
+}
+
+async function changeUserText(event) {
   let date = new Date();
   if ((event.key == " "  || event.code == "Space") && date.getTime() > finishedTyping ){
     console.log('here');//REMEMBER TO REMOVE
@@ -204,55 +203,56 @@ document.addEventListener("keyup", async function(event) {
       }
     );
   }
-});
+}
 
-  document.addEventListener("selectionchange", function(event) {
-    let selectionStart = event.target.selectionStart;
-    let selectionEnd = event.target.selectionEnd;
-    let highlightedText = event.target.value.slice(selectionStart, selectionEnd);
-    browser.runtime.sendMessage({message: 'UpdateContextMenu', highlightedText: highlightedText});
-  });
+function updateContextMenu(event) {
+  let selectionStart = event.target.selectionStart;
+  let selectionEnd = event.target.selectionEnd;
+  let highlightedText = event.target.value.slice(selectionStart, selectionEnd);
+  browser.runtime.sendMessage({message: 'UpdateContextMenu', highlightedText: highlightedText});
+}
 
-  browser.runtime.onMessage.addListener( 
-    function(request) {
-      if (request.message == 'ReviseWord'){
-        input = document.activeElement;
-        const start = input.selectionStart;
-        const end = input.selectionEnd;
-        const input_text = input.value;
-        const highlightedText = input_text.slice(start, end);
-        const modified_input_text = input_text.substring(0, start) + request.revision + input_text.substring(end, input_text.length);
-        input.value = modified_input_text;        
-      }
-    }
-  );
+function contextMenuReviseWord(request) {
+  if (request.message == 'ReviseWord'){
+    input = document.activeElement;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const input_text = input.value;
+    const modified_input_text = input_text.substring(0, start) + request.revision + input_text.substring(end, input_text.length);
+    input.value = modified_input_text;        
+  }
+}
 
-  function parseLetterKeysFile(letterKeysLocation){
-    url = browser.runtime.getURL(letterKeysLocation);
-    fetch(url)
-      .then((res) => res.text())
-      .then((text) => {
-        for (const line of text.split(/\r?\n/)){
-          let [dictKey, dictElement] = line.split(":");
-          if (isNaN(dictElement)){
-            armenianLetterKeys[dictKey] = dictElement;
-          } 
-          else{
-            englishLetterKeys[dictKey] = dictElement;
-          }
+function parseLetterKeysFile(letterKeysLocation){
+  url = browser.runtime.getURL(letterKeysLocation);
+  fetch(url)
+    .then((res) => res.text())
+    .then((text) => {
+      for (const line of text.split(/\r?\n/)){
+        let [dictKey, dictElement] = line.split(":");
+        if (isNaN(dictElement)){
+          armenianLetterKeys[dictKey] = dictElement;
+        } 
+        else{
+          englishLetterKeys[dictKey] = dictElement;
         }
-      })
-      .catch((e) => console.error(e));
-  };
-
-  browser.runtime.onMessage.addListener(
-    function(request) {
-      if (request.message == 'SaveSettings'){
-        wordLength = request.wordLength;
-        parseLetterKeysFile(request.letterKeysLocation);
-        typingBuffer = request.typingBuffer;
-        revertTimer = request.revertTimer;
-        firstToken = request.firstToken;
       }
-    }
-  );
+    })
+    .catch((e) => console.error(e));
+};
+
+function saveMainSettings(request) {
+  if (request.message == 'SaveSettings'){
+    wordLength = request.wordLength;
+    parseLetterKeysFile(request.letterKeysLocation);
+    typingBuffer = request.typingBuffer;
+    revertTimer = request.revertTimer;
+    firstToken = request.firstToken;
+  }
+}
+
+document.addEventListener("keydown", setFinishedTyping);
+document.addEventListener("keyup", changeUserText);
+document.addEventListener("selectionchange", updateContextMenu);
+browser.runtime.onMessage.addListener(contextMenuReviseWord);
+browser.runtime.onMessage.addListener(saveMainSettings);
