@@ -240,7 +240,7 @@ function parseLetterKeysFile(letterKeysLocation){
     .catch((e) => console.error(e));
 };
 
-function saveMainSettings(request) {
+function updateSettings(request) {
   wordLength = request.wordLength;
   parseLetterKeysFile(request.letterKeysLocation);
   typingBuffer = request.typingBuffer;
@@ -248,12 +248,11 @@ function saveMainSettings(request) {
   firstToken = request.firstToken;
 }
 
-//FIND A WAY TO READ LOCAL STORAGE FROM CONTENT SCRIPT
-console.log('load');
+browser.runtime.sendMessage({message: 'checkSwitchToggle'});
 
 browser.runtime.onMessage.addListener(function(request){
   if (request.message == 'ActivateListeners'){
-    saveMainSettings(request);
+    updateSettings(request);
     document.addEventListener("keydown", setFinishedTyping);
     document.addEventListener("keyup", changeUserText);
     document.addEventListener("selectionchange", updateContextMenu);

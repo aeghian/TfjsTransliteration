@@ -30,13 +30,12 @@ if (localStorage.getItem('modelLocation')){
 }
 
 if (localStorage.getItem('toggleSwitch') == "enabled"){
-  document.getElementById('toggle').checked = true;
+  document.getElementById('toggleSwitch').checked = true;
   //set the rest of global vars in localstorage and reset text as well as checkbox
 }
 
-
   document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('toggle').addEventListener('change', function() {
+    document.getElementById('toggleSwitch').addEventListener('change', function() {
       if (this.checked){
         localStorage.setItem("toggleSwitch", "enabled");
         localStorage.setItem("modelLocation", document.getElementById('modelLocation').value);

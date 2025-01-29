@@ -80,38 +80,80 @@ function updateContextMenuListener(request) {
   }
 }
 
-async function saveContextMenuSettings(request) {
-  model = await tf.loadGraphModel(request.modelLocation);
-  wordLength = Number(request.wordLength);
-  letterKeysLocation = request.letterKeysLocation; //unused
-  typingBuffer = Number(request.typingBuffer); //unused
-  revertTimer = Number(request.revertTimer); //unused
-  firstToken = Number(request.firstToken); //unused
+function saveConfigurationsLocalStorage(request){
+  localStorage.setItem("toggleSwitch", "enabled");
+  localStorage.setItem("modelLocation", request.modelLocation);
+  localStorage.setItem("wordLength", request.wordLength);
+  localStorage.setItem("letterKeysLocation", request.letterKeysLocation);
+  localStorage.setItem("typingBuffer", request.typingBuffer);
+  localStorage.setItem("revertTimer", request.revertTimer);
+  localStorage.setItem("firstToken", request.firstToken);
+}
+
+function removeConfigurationsLocalStorage(){
+  localStorage.removeItem("toggleSwitch");
+  localStorage.removeItem("modelLocation");
+  localStorage.removeItem("wordLength");
+  localStorage.removeItem("letterKeysLocation");
+  localStorage.removeItem("typingBuffer");
+  localStorage.removeItem("revertTimer");
+  localStorage.removeItem("firstToken");
+}
+
+async function updateSettings() {
+  model = await tf.loadGraphModel(localStorage.getItem('modelLocation'));
+  wordLength = Number(localStorage.getItem('wordLength'));
+  letterKeysLocation = localStorage.getItem('letterKeysLocation'); //unused
+  typingBuffer = Number(localStorage.getItem('typingBuffer')); //unused
+  revertTimer = Number(localStorage.getItem('revertTimer')); //unused
+  firstToken = Number(localStorage.getItem('firstToken')); //unused
   //need to send message from context to main
   browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
     browser.tabs.sendMessage(tabs[0].id, { message: "ActivateListeners", wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
   });
 }
 
+function addContextMenuListeners(){
+  browser.runtime.onMessage.addListener(runTensorFlowModelListener);
+  browser.runtime.onMessage.addListener(updateEnglishToArmenianDictionaryListener);
+  browser.contextMenus.onClicked.addListener(sendReviseWordMessage);
+  browser.runtime.onMessage.addListener(updateContextMenuListener);
+}
+
+function removeAllListeners(){
+  browser.runtime.onMessage.removeListener(runTensorFlowModelListener);
+  browser.runtime.onMessage.removeListener(updateEnglishToArmenianDictionaryListener);
+  browser.contextMenus.onClicked.removeListener(sendReviseWordMessage);
+  browser.runtime.onMessage.removeListener(updateContextMenuListener);
+  browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
+    browser.tabs.sendMessage(tabs[0].id, { message: "RemoveListeners"});
+  });
+}
+
+browser.runtime.onMessage.addListener(function(request){
+  if (request.message == 'checkSwitchToggle'){
+    if (localStorage.getItem('toggleSwitch') == 'enabled'){
+      updateSettings();
+      addContextMenuListeners();
+    } else {
+      removeConfigurationsLocalStorage();
+      removeAllListeners();
+    }
+  }
+});
+
 browser.runtime.onMessage.addListener(function(request){
   if (request.message == 'ActivateListeners'){
-    saveContextMenuSettings(request);
-    browser.runtime.onMessage.addListener(runTensorFlowModelListener);
-    browser.runtime.onMessage.addListener(updateEnglishToArmenianDictionaryListener);
-    browser.contextMenus.onClicked.addListener(sendReviseWordMessage);
-    browser.runtime.onMessage.addListener(updateContextMenuListener);
+    saveConfigurationsLocalStorage(request);
+    updateSettings();
+    addContextMenuListeners();
   }
 });
 
 browser.runtime.onMessage.addListener(function(request){
   if (request.message == 'RemoveListeners'){
-    browser.runtime.onMessage.removeListener(runTensorFlowModelListener);
-    browser.runtime.onMessage.removeListener(updateEnglishToArmenianDictionaryListener);
-    browser.contextMenus.onClicked.removeListener(sendReviseWordMessage);
-    browser.runtime.onMessage.removeListener(updateContextMenuListener);
-    browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
-      browser.tabs.sendMessage(tabs[0].id, { message: "RemoveListeners"});
-    });
+    removeConfigurationsLocalStorage();
+    removeAllListeners();
   }
 });
 
