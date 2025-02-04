@@ -1,5 +1,6 @@
 //Settings (Set defaults)/ensure settings carry between page reloads
 let wordLength;
+let wordLengthBufferKey;
 let armenianLetterKeys = {};
 let englishLetterKeys = {};
 let typingBuffer;
@@ -163,7 +164,7 @@ function getModelInputs(text){
     
     //pad for variable length
     for (let i = keyArray.length; i < wordLength; i++){
-      keyArray.push([1]);
+      keyArray.push([wordLengthBufferKey]);
     }
     modelInputsArray.push(keyArray);
   }
@@ -242,6 +243,7 @@ function parseLetterKeysFile(letterKeysLocation){
 
 function updateSettings(request) {
   wordLength = request.wordLength;
+  wordLengthBufferKey = request.wordLengthBufferKey;
   parseLetterKeysFile(request.letterKeysLocation);
   typingBuffer = request.typingBuffer;
   revertTimer = request.revertTimer;

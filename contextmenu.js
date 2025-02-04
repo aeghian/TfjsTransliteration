@@ -4,6 +4,7 @@ let possibleEnglishArray = [];
 //Settings (set detauls)
 let model;
 let wordLength;
+let wordLengthBufferKey;
 let letterKeysLocation;
 let typingBuffer;
 let revertTimer;
@@ -84,6 +85,7 @@ function saveConfigurationsLocalStorage(request){
   localStorage.setItem("toggleSwitch", "enabled");
   localStorage.setItem("modelLocation", request.modelLocation);
   localStorage.setItem("wordLength", request.wordLength);
+  localStorage.setItem("wordLengthBufferKey", request.wordLengthBufferKey);
   localStorage.setItem("letterKeysLocation", request.letterKeysLocation);
   localStorage.setItem("typingBuffer", request.typingBuffer);
   localStorage.setItem("revertTimer", request.revertTimer);
@@ -94,6 +96,7 @@ function removeConfigurationsLocalStorage(){
   localStorage.removeItem("toggleSwitch");
   localStorage.removeItem("modelLocation");
   localStorage.removeItem("wordLength");
+  localStorage.removeItem("wordLengthBufferKey");
   localStorage.removeItem("letterKeysLocation");
   localStorage.removeItem("typingBuffer");
   localStorage.removeItem("revertTimer");
@@ -103,13 +106,14 @@ function removeConfigurationsLocalStorage(){
 async function updateSettings() {
   model = await tf.loadGraphModel(localStorage.getItem('modelLocation'));
   wordLength = Number(localStorage.getItem('wordLength'));
+  wordLengthBufferKey = Number(localStorage.getItem('wordLengthBufferKey')); //unused
   letterKeysLocation = localStorage.getItem('letterKeysLocation'); //unused
   typingBuffer = Number(localStorage.getItem('typingBuffer')); //unused
   revertTimer = Number(localStorage.getItem('revertTimer')); //unused
   firstToken = Number(localStorage.getItem('firstToken')); //unused
   //need to send message from context to main
   browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    browser.tabs.sendMessage(tabs[0].id, { message: "ActivateListeners", wordLength: wordLength, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
+    browser.tabs.sendMessage(tabs[0].id, { message: "ActivateListeners", wordLength: wordLength, wordLengthBufferKey: wordLengthBufferKey, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
   });
 }
 
