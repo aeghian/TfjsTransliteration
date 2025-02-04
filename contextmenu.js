@@ -4,8 +4,8 @@ let possibleEnglishArray = [];
 //Settings (set detauls)
 let model;
 let wordLength;
-let wordLengthBufferKey;
-let letterKeysLocation;
+let wordLengthBufferToken;
+let letterTokensLocation;
 let typingBuffer;
 let revertTimer;
 let firstToken;
@@ -85,8 +85,8 @@ function saveConfigurationsLocalStorage(request){
   localStorage.setItem("toggleSwitch", "enabled");
   localStorage.setItem("modelLocation", request.modelLocation);
   localStorage.setItem("wordLength", request.wordLength);
-  localStorage.setItem("wordLengthBufferKey", request.wordLengthBufferKey);
-  localStorage.setItem("letterKeysLocation", request.letterKeysLocation);
+  localStorage.setItem("wordLengthBufferToken", request.wordLengthBufferToken);
+  localStorage.setItem("letterTokensLocation", request.letterTokensLocation);
   localStorage.setItem("typingBuffer", request.typingBuffer);
   localStorage.setItem("revertTimer", request.revertTimer);
   localStorage.setItem("firstToken", request.firstToken);
@@ -96,8 +96,8 @@ function removeConfigurationsLocalStorage(){
   localStorage.removeItem("toggleSwitch");
   localStorage.removeItem("modelLocation");
   localStorage.removeItem("wordLength");
-  localStorage.removeItem("wordLengthBufferKey");
-  localStorage.removeItem("letterKeysLocation");
+  localStorage.removeItem("wordLengthBufferToken");
+  localStorage.removeItem("letterTokensLocation");
   localStorage.removeItem("typingBuffer");
   localStorage.removeItem("revertTimer");
   localStorage.removeItem("firstToken");
@@ -106,14 +106,14 @@ function removeConfigurationsLocalStorage(){
 async function updateSettings() {
   model = await tf.loadGraphModel(localStorage.getItem('modelLocation'));
   wordLength = Number(localStorage.getItem('wordLength'));
-  wordLengthBufferKey = Number(localStorage.getItem('wordLengthBufferKey')); //unused
-  letterKeysLocation = localStorage.getItem('letterKeysLocation'); //unused
+  wordLengthBufferToken = Number(localStorage.getItem('wordLengthBufferToken')); //unused
+  letterTokensLocation = localStorage.getItem('letterTokensLocation'); //unused
   typingBuffer = Number(localStorage.getItem('typingBuffer')); //unused
   revertTimer = Number(localStorage.getItem('revertTimer')); //unused
   firstToken = Number(localStorage.getItem('firstToken')); //unused
   //need to send message from context to main
   browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    browser.tabs.sendMessage(tabs[0].id, { message: "ActivateListeners", wordLength: wordLength, wordLengthBufferKey: wordLengthBufferKey, letterKeysLocation: letterKeysLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
+    browser.tabs.sendMessage(tabs[0].id, { message: "ActivateListeners", wordLength: wordLength, wordLengthBufferToken: wordLengthBufferToken, letterTokensLocation: letterTokensLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
   });
 }
 

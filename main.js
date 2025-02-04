@@ -1,6 +1,6 @@
 //Settings (Set defaults)/ensure settings carry between page reloads
 let wordLength;
-let wordLengthBufferKey;
+let wordLengthBufferToken;
 let armenianLetterKeys = {};
 let englishLetterKeys = {};
 let typingBuffer;
@@ -164,7 +164,7 @@ function getModelInputs(text){
     
     //pad for variable length
     for (let i = keyArray.length; i < wordLength; i++){
-      keyArray.push([wordLengthBufferKey]);
+      keyArray.push([wordLengthBufferToken]);
     }
     modelInputsArray.push(keyArray);
   }
@@ -223,8 +223,8 @@ function contextMenuReviseWord(request) {
   }
 }
 
-function parseLetterKeysFile(letterKeysLocation){
-  url = browser.runtime.getURL(letterKeysLocation);
+function parseLetterKeysFile(letterTokensLocation){
+  url = browser.runtime.getURL(letterTokensLocation);
   fetch(url)
     .then((res) => res.text())
     .then((text) => {
@@ -243,8 +243,8 @@ function parseLetterKeysFile(letterKeysLocation){
 
 function updateSettings(request) {
   wordLength = request.wordLength;
-  wordLengthBufferKey = request.wordLengthBufferKey;
-  parseLetterKeysFile(request.letterKeysLocation);
+  wordLengthBufferToken = request.wordLengthBufferToken;
+  parseLetterKeysFile(request.letterTokensLocation);
   typingBuffer = request.typingBuffer;
   revertTimer = request.revertTimer;
   firstToken = request.firstToken;
