@@ -6,6 +6,7 @@ let englishLetterKeys = {};
 let typingBuffer;
 let revertTimer;
 let firstToken;
+let noncharacterTokens = [];
 
 
 function decodeArmenianWordPredictionArray(outputArray){
@@ -13,7 +14,7 @@ function decodeArmenianWordPredictionArray(outputArray){
   for (const prediction of outputArray){
     let placeholderData = '';
     for (const key of prediction){
-      if (key < 4){
+      if (noncharacterTokens.includes(Number(key).toString())){
         break;
       }
       placeholderData += armenianLetterKeys[(Number(key)).toString()];
@@ -248,6 +249,7 @@ function updateSettings(request) {
   typingBuffer = request.typingBuffer;
   revertTimer = request.revertTimer;
   firstToken = request.firstToken;
+  noncharacterTokens = request.noncharacterTokens.split(",");
 }
 
 browser.runtime.sendMessage({message: 'checkSwitchToggle'});

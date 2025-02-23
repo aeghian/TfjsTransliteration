@@ -2,6 +2,7 @@ let englishToArmenianDictionary = {};
 let possibleEnglishArray = [];
 
 //Settings (set detauls)
+let configurationInputs = {};
 let model;
 let wordLength;
 let wordLengthBufferToken;
@@ -9,6 +10,7 @@ let letterTokensLocation;
 let typingBuffer;
 let revertTimer;
 let firstToken;
+let noncharacterTokens;
 
 async function runTensorFlowModel(model, modelInputsArray){
   let modelOutputsArray = [];
@@ -81,26 +83,18 @@ function updateContextMenuListener(request) {
   }
 }
 
-function saveConfigurationsLocalStorage(request){
+function saveConfigurationsLocalStorage(){
   localStorage.setItem("toggleSwitch", "enabled");
-  localStorage.setItem("modelLocation", request.modelLocation);
-  localStorage.setItem("wordLength", request.wordLength);
-  localStorage.setItem("wordLengthBufferToken", request.wordLengthBufferToken);
-  localStorage.setItem("letterTokensLocation", request.letterTokensLocation);
-  localStorage.setItem("typingBuffer", request.typingBuffer);
-  localStorage.setItem("revertTimer", request.revertTimer);
-  localStorage.setItem("firstToken", request.firstToken);
+  for (const key in configurationInputs){
+    localStorage.setItem(key, configurationInputs[key]);
+  }
 }
 
 function removeConfigurationsLocalStorage(){
   localStorage.removeItem("toggleSwitch");
-  localStorage.removeItem("modelLocation");
-  localStorage.removeItem("wordLength");
-  localStorage.removeItem("wordLengthBufferToken");
-  localStorage.removeItem("letterTokensLocation");
-  localStorage.removeItem("typingBuffer");
-  localStorage.removeItem("revertTimer");
-  localStorage.removeItem("firstToken");
+  for (const key in configurationInputs){
+    localStorage.removeItem(key);
+  }
 }
 
 async function updateSettings() {
@@ -111,9 +105,10 @@ async function updateSettings() {
   typingBuffer = Number(localStorage.getItem('typingBuffer')); //unused
   revertTimer = Number(localStorage.getItem('revertTimer')); //unused
   firstToken = Number(localStorage.getItem('firstToken')); //unused
+  noncharacterTokens = localStorage.getItem('noncharacterTokens'); //unused
   //need to send message from context to main
   browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    browser.tabs.sendMessage(tabs[0].id, { message: "ActivateListeners", wordLength: wordLength, wordLengthBufferToken: wordLengthBufferToken, letterTokensLocation: letterTokensLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken});
+    browser.tabs.sendMessage(tabs[0].id, { message: "ActivateListeners", wordLength: wordLength, wordLengthBufferToken: wordLengthBufferToken, letterTokensLocation: letterTokensLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken, noncharacterTokens: noncharacterTokens});
   });
 }
 
@@ -148,7 +143,8 @@ browser.runtime.onMessage.addListener(function(request){
 
 browser.runtime.onMessage.addListener(function(request){
   if (request.message == 'ActivateListeners'){
-    saveConfigurationsLocalStorage(request);
+    configurationInputs = request.configurationInputs;
+    saveConfigurationsLocalStorage();
     updateSettings();
     addContextMenuListeners();
   }
@@ -156,6 +152,7 @@ browser.runtime.onMessage.addListener(function(request){
 
 browser.runtime.onMessage.addListener(function(request){
   if (request.message == 'RemoveListeners'){
+    configurationInputs = request.configurationInputs;
     removeConfigurationsLocalStorage();
     removeAllListeners();
   }
