@@ -191,14 +191,14 @@ async function changeUserText(event) {
     let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
     browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
     browser.runtime.onMessage.addListener(
-      async function(request) {
+      function(request) {
         if (request.message == 'ModelReturn'){
           // Modify the text.
-          let modifiedText = await modifyText(text, request.data, nonletterLocations, capitalLocation);
+          let modifiedText = modifyText(event.target.value, request.data, nonletterLocations, capitalLocation);
           // Set the text back on the element.
           while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
             event.target.value = modifiedText;
-            await new Promise(r => setTimeout(r, revertTimer)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
+            new Promise(r => setTimeout(r, revertTimer)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
           }
         }
       }
