@@ -146,8 +146,8 @@ function returnCapitalLocation(cleanTextArray){
   return capitalLocation;
 }
 
-function padModelInput(keyArrayLength){
-  for (let i = keyArrayLength; i < wordLength; i++){
+function padModelInput(keyArray){
+  for (let i = keyArray.length; i < wordLength; i++){
     keyArray.push([wordLengthBufferToken]);
   }
   return keyArray;
@@ -169,7 +169,7 @@ function getModelInputs(text){
       keyArray.push([Number(englishLetterKeys[letter])]);
     }
     
-    keyArray = padModelInput(keyArray.length);
+    keyArray = padModelInput(keyArray);
     modelInputsArray.push(keyArray);
   }
   return [modelInputsArray, nonletterLocations, capitalLocation];
