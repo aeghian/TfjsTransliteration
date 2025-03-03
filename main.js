@@ -1,4 +1,4 @@
-//Settings (Set defaults)/ensure settings carry between page reloads
+//Settings
 let wordLength;
 let wordLengthBufferToken;
 let armenianLetterKeys = {};
@@ -42,7 +42,6 @@ function returnarmenianTextArray(englishTextIndexArray, currentTextArray, modelO
   let outputIndex = 0;
   for (const textIndex of englishTextIndexArray){
     let armenianWordPredictionsArray = decodeArmenianWordPredictionArray(modelOutputsArray[outputIndex]);
-    //store additional output options in dictionaryarmenianWordPredictionsArray
     browser.runtime.sendMessage({message: 'UpdateEnglishToArmenianDictionary', text:  currentTextArray[textIndex], armenianWordPredictionsArray: armenianWordPredictionsArray});
     currentTextArray[textIndex] = armenianWordPredictionsArray[0];
     outputIndex++;
@@ -147,6 +146,13 @@ function returnCapitalLocation(cleanTextArray){
   return capitalLocation;
 }
 
+function padModelInput(keyArrayLength){
+  for (let i = keyArrayLength; i < wordLength; i++){
+    keyArray.push([wordLengthBufferToken]);
+  }
+  return keyArray;
+}
+
 function getModelInputs(text){
   let [cleanTextArray, nonletterLocations] = returncleanTextArrayAndnonletterLocations(text);
   let capitalLocation = returnCapitalLocation(cleanTextArray);
@@ -163,10 +169,7 @@ function getModelInputs(text){
       keyArray.push([Number(englishLetterKeys[letter])]);
     }
     
-    //pad for variable length
-    for (let i = keyArray.length; i < wordLength; i++){
-      keyArray.push([wordLengthBufferToken]);
-    }
+    keyArray = padModelInput(keyArray.length);
     modelInputsArray.push(keyArray);
   }
   return [modelInputsArray, nonletterLocations, capitalLocation];
@@ -184,21 +187,16 @@ async function setFinishedTyping(event){
 async function changeUserText(event) {
   let date = new Date();
   if ((event.key == " "  || event.code == "Space") && date.getTime() > finishedTyping ){
-    console.log('here');//REMEMBER TO REMOVE
-    // Get the text user is typing.
     let text = event.target.value;
-
     let [modelInputsArray, nonletterLocations, capitalLocation] = getModelInputs(text);
     browser.runtime.sendMessage({message: 'RunModel', modelInputsArray: modelInputsArray});
     browser.runtime.onMessage.addListener(
       function(request) {
         if (request.message == 'ModelReturn'){
-          // Modify the text.
           let modifiedText = modifyText(event.target.value, request.data, nonletterLocations, capitalLocation);
-          // Set the text back on the element.
           while (event.target.value.replace(/ /g,'') == text.replace(/ /g,'')){
             event.target.value = modifiedText;
-            new Promise(r => setTimeout(r, revertTimer)); //needed because some text fields instantly revert text after being changed; maybe adjustable in settings
+            new Promise(r => setTimeout(r, revertTimer)); //needed because some text fields instantly revert text after being changed
           }
         }
       }

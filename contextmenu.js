@@ -1,7 +1,7 @@
 let englishToArmenianDictionary = {};
 let possibleEnglishArray = [];
 
-//Settings (set detauls)
+//Settings
 let configurationInputs = {};
 let model;
 let wordLength;
@@ -100,13 +100,12 @@ function removeConfigurationsLocalStorage(){
 async function updateSettings() {
   model = await tf.loadGraphModel(localStorage.getItem('modelLocation'));
   wordLength = Number(localStorage.getItem('wordLength'));
-  wordLengthBufferToken = Number(localStorage.getItem('wordLengthBufferToken')); //unused
-  letterTokensLocation = localStorage.getItem('letterTokensLocation'); //unused
-  typingBuffer = Number(localStorage.getItem('typingBuffer')); //unused
-  revertTimer = Number(localStorage.getItem('revertTimer')); //unused
-  firstToken = Number(localStorage.getItem('firstToken')); //unused
-  noncharacterTokens = localStorage.getItem('noncharacterTokens'); //unused
-  //need to send message from context to main
+  wordLengthBufferToken = Number(localStorage.getItem('wordLengthBufferToken')); //unused in context menu
+  letterTokensLocation = localStorage.getItem('letterTokensLocation'); //unused in context menu
+  typingBuffer = Number(localStorage.getItem('typingBuffer')); //unused in context menu
+  revertTimer = Number(localStorage.getItem('revertTimer')); //unused in context menu
+  firstToken = Number(localStorage.getItem('firstToken')); //unused in context menu
+  noncharacterTokens = localStorage.getItem('noncharacterTokens'); //unused in context menu
   browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
     browser.tabs.sendMessage(tabs[0].id, { message: "ActivateListeners", wordLength: wordLength, wordLengthBufferToken: wordLengthBufferToken, letterTokensLocation: letterTokensLocation, typingBuffer: typingBuffer, revertTimer: revertTimer, firstToken: firstToken, noncharacterTokens: noncharacterTokens});
   });
