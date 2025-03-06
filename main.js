@@ -207,7 +207,7 @@ async function changeUserText(event) {
 function updateContextMenu(event) {
   let selectionStart = event.target.selectionStart;
   let selectionEnd = event.target.selectionEnd;
-  let highlightedText = event.target.value.slice(selectionStart, selectionEnd);
+  let highlightedText = event.target.value.slice(selectionStart, selectionEnd).toLowerCase();
   browser.runtime.sendMessage({message: 'UpdateContextMenu', highlightedText: highlightedText});
 }
 
@@ -216,9 +216,13 @@ function contextMenuReviseWord(request) {
     input = document.activeElement;
     const start = input.selectionStart;
     const end = input.selectionEnd;
-    const input_text = input.value;
-    const modified_input_text = input_text.substring(0, start) + request.revision + input_text.substring(end, input_text.length);
-    input.value = modified_input_text;        
+    const inputText = input.value;
+    const highlightedText = inputText.substring(start, end);
+    let capitalLocation = returnCapitalLocation([highlightedText]);
+    let revision = returnCapitalArmenianTextArray([request.revision], capitalLocation).join("");
+    console.log(revision);
+    const modifiedInputText = inputText.substring(0, start) + revision + inputText.substring(end, inputText.length);
+    input.value = modifiedInputText;        
   }
 }
 
